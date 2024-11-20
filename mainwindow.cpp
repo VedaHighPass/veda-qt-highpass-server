@@ -6,12 +6,15 @@
 #include "databasemanager.h"
 #include <QMessageBox>
 #include "PlateRecordInterface.h"
+#include <QDateTime>
+#include <QString>
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
+
 }
 
 MainWindow::~MainWindow()
@@ -40,6 +43,30 @@ void MainWindow::on_BtnSearchDB_clicked()
     } else {
         QString recordStr = records.join("\n");
         QMessageBox::information(this, "Plate Records", recordStr);
+    }
+}
+
+QString getCurrentFormattedTime() {
+    // 현재 시간을 가져옵니다.
+    QDateTime currentTime = QDateTime::currentDateTime();\
+    // 지정된 형식으로 시간을 포맷팅합니다.
+    QString formattedTime = currentTime.toString("yyyy_MM_dd_HH:mm:ss.zz");
+    return formattedTime;
+}
+
+
+void MainWindow::on_BtnInsertDB_clicked()
+{
+    //todo insert test code
+    PlateRecordInterface plateRecord(DatabaseManager::instance());
+    QString entryTime = QString("202411201550");
+    QString plateNumber = QString("ABC1234");
+    int gateNumber = rand()%100;
+
+    if (plateRecord.addHighPassRecord(getCurrentFormattedTime(), plateNumber, gateNumber)) {
+        QMessageBox::information(this, "Success", "Record inserted successfully.");
+    } else {
+        QMessageBox::critical(this, "Error", "Failed to insert record.");
     }
 }
 

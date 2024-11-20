@@ -40,6 +40,19 @@
      <string>Search DB</string>
     </property>
    </widget>
+   <widget class="QPushButton" name="BtnInsertDB">
+    <property name="geometry">
+     <rect>
+      <x>40</x>
+      <y>80</y>
+      <width>101</width>
+      <height>22</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>InsertData</string>
+    </property>
+   </widget>
   </widget>
   <widget class="QMenuBar" name="menubar">
    <property name="geometry">

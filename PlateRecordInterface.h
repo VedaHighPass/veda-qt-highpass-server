@@ -8,6 +8,10 @@ class PlateRecordInterface {
 public:
     PlateRecordInterface(DatabaseManager& dbManager) : dbManager(dbManager) {}
 
+    bool addHighPassRecord(const QString& entryTime, const QString& plateNumber, int gateNumber) {
+        return dbManager.insertHighPassRecord(entryTime, plateNumber, gateNumber);
+    }
+
     QStringList getAllRecords() {
         QStringList records;
         QString queryStr = "SELECT * FROM HIGHPASS_RECORD";

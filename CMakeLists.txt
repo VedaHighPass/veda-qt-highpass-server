@@ -16,7 +16,6 @@ set(PROJECT_SOURCES
         main.cpp
         mainwindow.cpp
         mainwindow.h
-        databasemanager.cpp
         databasemanager.h
         PlateRecordInterface.h
         mainwindow.ui

@@ -20,6 +20,8 @@ private slots:
 
     void on_BtnSearchDB_clicked();
 
+    void on_BtnInsertDB_clicked();
+
 private:
     Ui::MainWindow *ui;
 };

@@ -14,6 +14,22 @@ public:
         static DatabaseManager instance;
         return instance;
     }
+    bool insertHighPassRecord(const QString& entryTime, const QString& plateNumber, int gateNumber) {
+        QSqlQuery query;
+        query.prepare("INSERT INTO HIGHPASS_RECORD (EntryTime, PlateNumber, GateNumber) "
+                      "VALUES (:entryTime, :plateNumber, :gateNumber)");
+        query.bindValue(":entryTime", entryTime);
+        query.bindValue(":plateNumber", plateNumber);
+        query.bindValue(":gateNumber", gateNumber);
+
+        if (!query.exec()) {
+            qDebug() << "Insert error:" << query.lastError().text();
+            return false;
+        }
+
+        qDebug() << "Record inserted successfully.";
+        return true;
+    }
 
     bool connectToDatabase(const QString& dbName) {
         if (!QFile::exists("/home/server/veda-qt-highpass-server/gotomars.db")) {
