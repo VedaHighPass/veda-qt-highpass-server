@@ -5,7 +5,6 @@
 #include <QtSql/QSqlError>
 #include "DatabaseManager.h"
 #include <QMessageBox>
-#include "DBControlInterface.h"
 #include <QDateTime>
 #include <QString>
 
@@ -46,8 +45,7 @@ void MainWindow::on_btnConnectDB_clicked()
 
 void MainWindow::on_btnSearchDB_clicked()
 {
-    DBControlInterface controller(DatabaseManager::instance());
-    QList<QVariantMap> records = controller.getAllRecords();
+    QList<QVariantMap> records = DatabaseManager::instance().getAllRecords();
 
     if (records.isEmpty()) {
         QMessageBox::information(this, "Plate Records", "No records found.");
@@ -73,12 +71,11 @@ void MainWindow::on_btnSearchDB_clicked()
 void MainWindow::on_btnInsertDB_clicked()
 {
     //todo insert test code
-    DBControlInterface controller(DatabaseManager::instance());
     QString entryTime = QString("202411201550");
     QString plateNumber = QString("ABC1234");
     int gateNumber = rand()%100;
 
-    if (controller.addHighPassRecord(getCurrentFormattedTime(), plateNumber, gateNumber)) {
+    if (DatabaseManager::instance().addHighPassRecord(getCurrentFormattedTime(), plateNumber, gateNumber)) {
         QMessageBox::information(this, "Success", "Record inserted successfully.");
     } else {
         QMessageBox::critical(this, "Error", "Failed to insert record.");

@@ -2,7 +2,6 @@
 #include <QDebug>
 #include <QJsonArray>
 #include <QFile>
-#include "DBControlInterface.h"
 #include <QString>
 #include <QStringList>
 #include <QTcpServer>
@@ -63,8 +62,7 @@ void HttpServer::handleRequest(QTcpSocket* socket) {
     stream >> method >> path;
 
     if (method == "GET" && path == "/records") {
-        DBControlInterface controller(DatabaseManager::instance());
-        QList<QVariantMap> records = controller.getAllRecords(); // 데이터 가져오기
+        QList<QVariantMap> records = DatabaseManager::instance().getAllRecords(); // 데이터 가져오기
         QJsonArray jsonArray;
 
         for (const auto& record : records) {
@@ -80,8 +78,7 @@ void HttpServer::handleRequest(QTcpSocket* socket) {
         sendResponse(socket, jsonDoc.toJson(), 200);
     } else if (method == "GET" && path == "/gates") {
         // GATELIST 테이블에서 데이터 가져오기
-        DBControlInterface gateRecord(DatabaseManager::instance());
-        QList<QVariantMap> gates = gateRecord.getAllGates(); // GATELIST 데이터 가져오기
+        QList<QVariantMap> gates = DatabaseManager::instance().getAllGates(); // GATELIST 데이터 가져오기
         QJsonArray jsonArray;
 
         for (const auto& gate : gates) {
@@ -104,8 +101,18 @@ void HttpServer::handleRequest(QTcpSocket* socket) {
         QString plateNumber = jsonObject.value("PlateNumber").toString();
         int gateNumber = jsonObject.value("GateNumber").toInt();
 
-        if (dbManager.insertHighPassRecord(entryTime, plateNumber, gateNumber)) {
+        //add record in HIGHPASS_RECORD table.
+        int newRecordID = DatabaseManager::instance().addHighPassRecord(entryTime, plateNumber, gateNumber);
+        if (newRecordID != -1) {
             sendResponse(socket, "Record added successfully", 200);
+
+            //insert data in BILL table.
+            if(dbManager.checkIsEnterGate(gateNumber)){
+                dbManager.insertEnterStepBill(plateNumber, gateNumber, newRecordID);
+            }else {
+                dbManager.insertExitStepBill(plateNumber, gateNumber, newRecordID);
+            }
+
         } else {
             sendResponse(socket, "Failed to add record", 500);
         }
