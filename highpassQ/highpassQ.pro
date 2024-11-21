@@ -14,8 +14,8 @@ SOURCES += \
     mainwindow.cpp
 
 HEADERS += \
+    DBControlInterface.h \
     DatabaseManager.h \
-    PlateRecordInterface.h \
     httpserver.h \
     mainwindow.h
 

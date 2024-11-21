@@ -2,7 +2,7 @@
 #include <QDebug>
 #include <QJsonArray>
 #include <QFile>
-#include "PlateRecordInterface.h"
+#include "DBControlInterface.h"
 #include <QString>
 #include <QStringList>
 #include <QTcpServer>
@@ -63,9 +63,8 @@ void HttpServer::handleRequest(QTcpSocket* socket) {
     stream >> method >> path;
 
     if (method == "GET" && path == "/records") {
-        PlateRecordInterface plateRecord(DatabaseManager::instance());
-        QStringList strListRecords = plateRecord.getAllRecords(); // 데이터 가져오기
-        QList<QVariantMap> records = convertToQVariantMapList(strListRecords);
+        DBControlInterface controller(DatabaseManager::instance());
+        QList<QVariantMap> records = controller.getAllRecords(); // 데이터 가져오기
         QJsonArray jsonArray;
 
         for (const auto& record : records) {
@@ -74,6 +73,23 @@ void HttpServer::handleRequest(QTcpSocket* socket) {
             jsonObject["EntryTime"] = record["EntryTime"].toString();
             jsonObject["PlateNumber"] = record["PlateNumber"].toString();
             jsonObject["GateNumber"] = record["GateNumber"].toInt();
+            jsonArray.append(jsonObject);
+        }
+
+        QJsonDocument jsonDoc(jsonArray);
+        sendResponse(socket, jsonDoc.toJson(), 200);
+    } else if (method == "GET" && path == "/gates") {
+        // GATELIST 테이블에서 데이터 가져오기
+        DBControlInterface gateRecord(DatabaseManager::instance());
+        QList<QVariantMap> gates = gateRecord.getAllGates(); // GATELIST 데이터 가져오기
+        QJsonArray jsonArray;
+
+        for (const auto& gate : gates) {
+            QJsonObject jsonObject;
+            jsonObject["GateNumber"] = gate["GateNumber"].toInt();
+            jsonObject["GateName"] = gate["GateName"].toString();
+            jsonObject["isEnterGate"] = gate["isEnterGate"].toBool();
+            jsonObject["isExitGate"] = gate["isExitGate"].toBool();
             jsonArray.append(jsonObject);
         }
 

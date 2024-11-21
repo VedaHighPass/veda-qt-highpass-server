@@ -5,7 +5,7 @@
 #include <QtSql/QSqlError>
 #include "DatabaseManager.h"
 #include <QMessageBox>
-#include "PlateRecordInterface.h"
+#include "DBControlInterface.h"
 #include <QDateTime>
 #include <QString>
 
@@ -46,13 +46,26 @@ void MainWindow::on_btnConnectDB_clicked()
 
 void MainWindow::on_btnSearchDB_clicked()
 {
-    PlateRecordInterface plateRecord(DatabaseManager::instance());
-    QStringList records = plateRecord.getAllRecords();
+    DBControlInterface controller(DatabaseManager::instance());
+    QList<QVariantMap> records = controller.getAllRecords();
 
     if (records.isEmpty()) {
         QMessageBox::information(this, "Plate Records", "No records found.");
     } else {
-        QString recordStr = records.join("\n");
+        QStringList recordStrList;
+
+        // QList<QVariantMap>의 각 레코드를 문자열로 변환하여 QStringList에 추가
+        for (const QVariantMap &record : records) {
+            QString recordStr = QString("ID: %1, EntryTime: %2, PlateNumber: %3, GateNumber: %4")
+                                .arg(record["ID"].toInt())
+                                .arg(record["EntryTime"].toString())
+                                .arg(record["PlateNumber"].toString())
+                                .arg(record["GateNumber"].toInt());
+            recordStrList.append(recordStr);
+        }
+
+        // 레코드를 줄바꿈으로 구분하여 메시지 박스에 표시
+        QString recordStr = recordStrList.join("\n");
         QMessageBox::information(this, "Plate Records", recordStr);
     }
 }
@@ -60,12 +73,12 @@ void MainWindow::on_btnSearchDB_clicked()
 void MainWindow::on_btnInsertDB_clicked()
 {
     //todo insert test code
-    PlateRecordInterface plateRecord(DatabaseManager::instance());
+    DBControlInterface controller(DatabaseManager::instance());
     QString entryTime = QString("202411201550");
     QString plateNumber = QString("ABC1234");
     int gateNumber = rand()%100;
 
-    if (plateRecord.addHighPassRecord(getCurrentFormattedTime(), plateNumber, gateNumber)) {
+    if (controller.addHighPassRecord(getCurrentFormattedTime(), plateNumber, gateNumber)) {
         QMessageBox::information(this, "Success", "Record inserted successfully.");
     } else {
         QMessageBox::critical(this, "Error", "Failed to insert record.");
