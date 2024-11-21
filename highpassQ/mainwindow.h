@@ -16,11 +16,11 @@ public:
     ~MainWindow();
 
 private slots:
-    void on_BtnConnectDB_clicked();
+    void on_btnConnectDB_clicked();
 
-    void on_BtnSearchDB_clicked();
+    void on_btnSearchDB_clicked();
 
-    void on_BtnInsertDB_clicked();
+    void on_btnInsertDB_clicked();
 
 private:
     Ui::MainWindow *ui;

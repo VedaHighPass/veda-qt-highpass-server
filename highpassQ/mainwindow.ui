@@ -14,43 +14,43 @@
    <string>MainWindow</string>
   </property>
   <widget class="QWidget" name="centralwidget">
-   <widget class="QPushButton" name="BtnConnectDB">
+   <widget class="QPushButton" name="btnConnectDB">
     <property name="geometry">
      <rect>
-      <x>40</x>
-      <y>10</y>
-      <width>101</width>
+      <x>140</x>
+      <y>50</y>
+      <width>80</width>
       <height>22</height>
      </rect>
     </property>
     <property name="text">
-     <string>Connect DB</string>
+     <string>ConnectDB</string>
     </property>
    </widget>
-   <widget class="QPushButton" name="BtnSearchDB">
+   <widget class="QPushButton" name="btnSearchDB">
     <property name="geometry">
      <rect>
-      <x>40</x>
-      <y>40</y>
-      <width>101</width>
+      <x>130</x>
+      <y>100</y>
+      <width>80</width>
       <height>22</height>
      </rect>
     </property>
     <property name="text">
-     <string>Search DB</string>
+     <string>SearchDB</string>
     </property>
    </widget>
-   <widget class="QPushButton" name="BtnInsertDB">
+   <widget class="QPushButton" name="btnInsertDB">
     <property name="geometry">
      <rect>
-      <x>40</x>
-      <y>80</y>
+      <x>130</x>
+      <y>150</y>
       <width>101</width>
       <height>22</height>
      </rect>
     </property>
     <property name="text">
-     <string>InsertData</string>
+     <string>InsertDB Data</string>
     </property>
    </widget>
   </widget>

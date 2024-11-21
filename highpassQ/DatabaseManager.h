@@ -32,7 +32,7 @@ public:
     }
 
     bool connectToDatabase(const QString& dbName) {
-        if (!QFile::exists("/home/server/veda-qt-highpass-server/gotomars.db")) {
+        if (!QFile::exists("../veda-qt-highpass-server/highpassQ/gotomars.db")) {
             qDebug() << "Database file does not exist!";
             return false; // 또는 적절한 오류 처리
         }

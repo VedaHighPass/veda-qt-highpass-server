@@ -3,7 +3,7 @@
 #include <QtSql/QSqlDatabase>
 #include <QtSql/QSqlQuery>
 #include <QtSql/QSqlError>
-#include "databasemanager.h"
+#include "DatabaseManager.h".h"
 #include <QMessageBox>
 #include "PlateRecordInterface.h"
 #include <QDateTime>
@@ -14,7 +14,6 @@ MainWindow::MainWindow(QWidget *parent)
     , ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
-
 }
 
 MainWindow::~MainWindow()
@@ -23,9 +22,17 @@ MainWindow::~MainWindow()
 }
 
 
-void MainWindow::on_BtnConnectDB_clicked()
+QString getCurrentFormattedTime() {
+    // 현재 시간을 가져옵니다.
+    QDateTime currentTime = QDateTime::currentDateTime();\
+    // 지정된 형식으로 시간을 포맷팅합니다.
+    QString formattedTime = currentTime.toString("yyyy_MM_dd_HH:mm:ss.zz");
+    return formattedTime;
+}
+
+void MainWindow::on_btnConnectDB_clicked()
 {
-    if (DatabaseManager::instance().connectToDatabase("/home/server/veda-qt-highpass-server/gotomars.db")) {
+    if (DatabaseManager::instance().connectToDatabase("../veda-qt-highpass-server/highpassQ/gotomars.db")) {
         QMessageBox::information(this, "Success", "Connected to gotomars.db");
     } else {
         QMessageBox::critical(this, "Error", "Failed to connect to gotomars.db");
@@ -33,7 +40,7 @@ void MainWindow::on_BtnConnectDB_clicked()
 }
 
 
-void MainWindow::on_BtnSearchDB_clicked()
+void MainWindow::on_btnSearchDB_clicked()
 {
     PlateRecordInterface plateRecord(DatabaseManager::instance());
     QStringList records = plateRecord.getAllRecords();
@@ -46,16 +53,7 @@ void MainWindow::on_BtnSearchDB_clicked()
     }
 }
 
-QString getCurrentFormattedTime() {
-    // 현재 시간을 가져옵니다.
-    QDateTime currentTime = QDateTime::currentDateTime();\
-    // 지정된 형식으로 시간을 포맷팅합니다.
-    QString formattedTime = currentTime.toString("yyyy_MM_dd_HH:mm:ss.zz");
-    return formattedTime;
-}
-
-
-void MainWindow::on_BtnInsertDB_clicked()
+void MainWindow::on_btnInsertDB_clicked()
 {
     //todo insert test code
     PlateRecordInterface plateRecord(DatabaseManager::instance());

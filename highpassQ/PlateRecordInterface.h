@@ -1,7 +1,7 @@
 #ifndef PLATERECORDINTERFACE_H
 #define PLATERECORDINTERFACE_H
 
-#include "databasemanager.h"
+#include "DatabaseManager.h".h"
 #include <QStringList>
 
 class PlateRecordInterface {
