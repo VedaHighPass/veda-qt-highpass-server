@@ -1,7 +1,7 @@
 #ifndef PLATERECORDINTERFACE_H
 #define PLATERECORDINTERFACE_H
 
-#include "DatabaseManager.h".h"
+#include "DatabaseManager.h"
 #include <QStringList>
 
 class PlateRecordInterface {
@@ -18,7 +18,7 @@ public:
         QSqlQuery query = dbManager.executeSelectQuery(queryStr);
 
         while (query.next()) {
-            QString record = query.value(0).toString() + ", " + query.value(1).toString() + ", " + query.value(2).toString();
+            QString record = query.value(0).toString() + ", " + query.value(1).toString() + ", " + query.value(2).toString() + ", " + query.value(3).toString();
             records.append(record);
         }
 

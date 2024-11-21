@@ -3,17 +3,21 @@
 #include <QtSql/QSqlDatabase>
 #include <QtSql/QSqlQuery>
 #include <QtSql/QSqlError>
-#include "DatabaseManager.h".h"
+#include "DatabaseManager.h"
 #include <QMessageBox>
 #include "PlateRecordInterface.h"
 #include <QDateTime>
 #include <QString>
+
+#include "DatabaseManager.h"
+#include "httpserver.h"
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
+
 }
 
 MainWindow::~MainWindow()
