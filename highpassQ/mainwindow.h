@@ -7,6 +7,8 @@ QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
 QT_END_NAMESPACE
 
+class videoStream;
+
 class MainWindow : public QMainWindow
 {
     Q_OBJECT
@@ -22,7 +24,10 @@ private slots:
 
     void on_btnInsertDB_clicked();
 
+    void on_pushButton_clicked();
+
 private:
     Ui::MainWindow *ui;
+    videoStream* ui_videostream;
 };
 #endif // MAINWINDOW_H

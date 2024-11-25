@@ -9,7 +9,7 @@ int main(int argc, char *argv[])
     QApplication a(argc, argv);
 
     //dbConnect
-    DatabaseManager::instance().connectToDatabase(QString("../veda-qt-highpass-server/highpassQ/gotomars.db"));
+    DatabaseManager::instance().connectToDatabase(QString("/home/iam/veda_project/veda-qt-highpass-server/highpassQ/gotomars.db"));
 
     HttpServer server(DatabaseManager::instance());
     server.startServer(8080);

@@ -10,6 +10,7 @@
 
 #include "DatabaseManager.h"
 #include "httpserver.h"
+#include "videostream.h"
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -35,7 +36,7 @@ QString getCurrentFormattedTime() {
 
 void MainWindow::on_btnConnectDB_clicked()
 {
-    if (DatabaseManager::instance().connectToDatabase("../veda-qt-highpass-server/highpassQ/gotomars.db")) {
+    if (DatabaseManager::instance().connectToDatabase("/home/iam/veda_project/veda-qt-highpass-server/highpassQ/gotomars.db")) {
         QMessageBox::information(this, "Success", "Connected to gotomars.db");
     } else {
         QMessageBox::critical(this, "Error", "Failed to connect to gotomars.db");
@@ -82,3 +83,10 @@ void MainWindow::on_btnInsertDB_clicked()
     }
 }
 
+
+void MainWindow::on_pushButton_clicked()
+{
+    ui_videostream = new videoStream();
+    //setCentralWidget(ui_videostream);
+    ui_videostream->show();
+}
