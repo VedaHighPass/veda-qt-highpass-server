@@ -34,11 +34,13 @@ private slots:
     void slot_streaming_start();
     void slot_video_start();
     void slot_streaming_fail();
+    void showContextMenu(const QPoint& pos);
+    void addNewTab();
 private:
     Ui::videoStream *ui;
 signals:
     void signal_clikQuit();
-    void send_url(QString url);
+   // void send_url(QString url);
 };
 
 #endif // VIDEOSTREAM_H

@@ -59,12 +59,12 @@ void rtpClient::readFFmpegOutput() {
 
 }
 
-void rtpClient::recv_url(QString url)
-{
-    streaming_url = url;
-}
+//void rtpClient::recv_url(QString url)
+//{
+//    streaming_url = url;
+//}
 
-void rtpClient::startFFmpegProcess() {
+void rtpClient::startFFmpegProcess(QString url) {
     ffmpegProcess = new QProcess();
 
 //    #if 1 // window환경
@@ -80,7 +80,7 @@ void rtpClient::startFFmpegProcess() {
 
     // FFmpeg 명령어 설정 (rawvideo를 stdout으로 출력하도록)
     arguments << "-protocol_whitelist" << "file,tcp,udp,rtp,rtsp"
-              << "-i" << streaming_url//"rtsp://192.168.1.15:8554"
+              << "-i" << url//"rtsp://192.168.1.15:8554"
               << "-s" << "640x480"
               << "-pix_fmt" << "rgb24"  // 픽셀 포맷을 raw RGB로 설정
               << "-f" << "rawvideo"  // 출력을 raw 비디오로 설정
