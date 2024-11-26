@@ -26,6 +26,12 @@ private slots:
     void on_quitBtn_clicked();
     void slot_ffmpeg_debug(QString error);
 
+    void on_btnConnectDB_clicked();
+
+    void on_btnInsertDB_clicked();
+
+    void on_btnSearchDB_clicked();
+
 private:
     Ui::videoStream *ui;
 signals:

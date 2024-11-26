@@ -18,13 +18,13 @@ public:
     ~MainWindow();
 
 private slots:
-    void on_btnConnectDB_clicked();
+//    void on_btnConnectDB_clicked();
 
-    void on_btnSearchDB_clicked();
+//    void on_btnSearchDB_clicked();
 
-    void on_btnInsertDB_clicked();
+//    void on_btnInsertDB_clicked();
 
-    void on_pushButton_clicked();
+   // void on_pushButton_clicked();
 
 private:
     Ui::MainWindow *ui;
