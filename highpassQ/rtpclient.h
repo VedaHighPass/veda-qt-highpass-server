@@ -12,7 +12,7 @@ public:
     static rtpClient* instance();
 
     // FFmpeg 프로세스 시작 및 데이터 읽기 메서드
-    void startFFmpegProcess();
+    void startFFmpegProcess(QString url);
     void readFFmpegOutput();
 
     // FFmpeg 프로세스 관리용 변수
@@ -23,10 +23,10 @@ private:
     rtpClient();
     rtpClient(const rtpClient &) = delete;
     rtpClient &operator=(const rtpClient &) = delete;
-    QString streaming_url;
+    //QString streaming_url;
 public slots:
     void slot_quitBtn();
-    void recv_url(QString url);
+   // void recv_url(QString url);
 signals:
     void signal_ffmpeg_debug(QString);
     void signal_streaming_start();

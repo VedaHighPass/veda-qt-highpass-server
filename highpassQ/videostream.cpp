@@ -6,12 +6,31 @@
 #include <QMessageBox>
 #include <QDateTime>
 #include <QString>
+#include <QMenu>
+#include <QTabWidget>
 
 #include "videostream.h"
 #include "ui_videostream.h"
 #include "rtpclient.h"
 #include "DatabaseManager.h"
 #include "httpserver.h"
+
+
+videoStream::videoStream(QWidget *parent) :
+    QWidget(parent),
+    ui(new Ui::videoStream)
+{
+    ui->setupUi(this);
+    ui->widget_3->hide();
+    ui->tabWidget_2->setContextMenuPolicy(Qt::CustomContextMenu);
+    connect(this,SIGNAL(signal_clikQuit()),rtpClient::instance(),SLOT(slot_quitBtn()));
+    connect(rtpClient::instance(),SIGNAL(signal_ffmpeg_debug(QString)),this,SLOT(slot_ffmpeg_debug(QString)));
+    connect(rtpClient::instance(),SIGNAL(signal_streaming_start()),this,SLOT(slot_streaming_start()));
+    connect(rtpClient::instance(),SIGNAL(signal_video_start()),this,SLOT(slot_video_start()));
+    connect(this,SIGNAL(send_url(QString)),rtpClient::instance(),SLOT(recv_url(QString)));
+    connect(rtpClient::instance(),SIGNAL(signal_stream_fail()),this,SLOT(slot_streaming_fail()));
+    connect(ui->tabWidget_2, &QTabWidget::customContextMenuRequested, this, &videoStream::showContextMenu);
+}
 
 QString getCurrentFormattedTime() {
     // 현재 시간을 가져옵니다.
@@ -21,21 +40,6 @@ QString getCurrentFormattedTime() {
     return formattedTime;
 }
 
-videoStream::videoStream(QWidget *parent) :
-    QWidget(parent),
-    ui(new Ui::videoStream)
-{
-    ui->setupUi(this);
-    ui->widget_3->hide();
-    connect(this,SIGNAL(signal_clikQuit()),rtpClient::instance(),SLOT(slot_quitBtn()));
-    connect(rtpClient::instance(),SIGNAL(signal_ffmpeg_debug(QString)),this,SLOT(slot_ffmpeg_debug(QString)));
-    connect(rtpClient::instance(),SIGNAL(signal_streaming_start()),this,SLOT(slot_streaming_start()));
-    connect(rtpClient::instance(),SIGNAL(signal_video_start()),this,SLOT(slot_video_start()));
-    connect(this,SIGNAL(send_url(QString)),rtpClient::instance(),SLOT(recv_url(QString)));
-    connect(rtpClient::instance(),SIGNAL(signal_stream_fail()),this,SLOT(slot_streaming_fail()));
-
-
-}
 
 videoStream::~videoStream()
 {
@@ -46,8 +50,8 @@ void videoStream::on_startBtn_clicked()
 {
     rtpClient::instance()->videoLabel = ui->video_label;
     QString url = ui->lineEdit->text();
-    emit send_url(url);
-    rtpClient::instance()->startFFmpegProcess();
+    //emit send_url(url);
+    rtpClient::instance()->startFFmpegProcess(url);
     qDebug() << "start ffmpeg";
 }
 
@@ -139,3 +143,16 @@ void videoStream::slot_streaming_fail()
     ui->widget_3->hide();
 }
 
+void videoStream:: showContextMenu(const QPoint& pos) {
+    QMenu menu(this);
+    QAction* addTabAction = menu.addAction("Add Tab");
+    connect(addTabAction, &QAction::triggered, this, &videoStream::addNewTab);
+    menu.exec(ui->tabWidget_2->mapToGlobal(pos));
+
+}
+
+ void videoStream:: addNewTab() {
+    QWidget* newTab = new QWidget();
+    QString tabName = QString("Tab %1").arg(ui->tabWidget_2->count() + 1);
+    ui->tabWidget_2->addTab(newTab, tabName);
+}
