@@ -31,11 +31,14 @@ private slots:
     void on_btnInsertDB_clicked();
 
     void on_btnSearchDB_clicked();
-
+    void slot_streaming_start();
+    void slot_video_start();
+    void slot_streaming_fail();
 private:
     Ui::videoStream *ui;
 signals:
     void signal_clikQuit();
+    void send_url(QString url);
 };
 
 #endif // VIDEOSTREAM_H

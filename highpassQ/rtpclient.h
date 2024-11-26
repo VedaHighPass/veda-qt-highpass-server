@@ -23,10 +23,15 @@ private:
     rtpClient();
     rtpClient(const rtpClient &) = delete;
     rtpClient &operator=(const rtpClient &) = delete;
+    QString streaming_url;
 public slots:
     void slot_quitBtn();
+    void recv_url(QString url);
 signals:
     void signal_ffmpeg_debug(QString);
+    void signal_streaming_start();
+    void signal_video_start();
+    void signal_stream_fail();
 };
 
 #endif // RTPCLIENT_H

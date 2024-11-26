@@ -52,12 +52,17 @@ void rtpClient::readFFmpegOutput() {
         // 이미지를 잘라냄
         QImage croppedImage = image.copy(targetRect);
         QPixmap pixmap =  QPixmap::fromImage(croppedImage).scaled(labelSize, Qt::KeepAspectRatioByExpanding, Qt::SmoothTransformation);
+        emit signal_video_start();
         videoLabel->setPixmap(pixmap);
 
     }
 
 }
 
+void rtpClient::recv_url(QString url)
+{
+    streaming_url = url;
+}
 
 void rtpClient::startFFmpegProcess() {
     ffmpegProcess = new QProcess();
@@ -75,7 +80,7 @@ void rtpClient::startFFmpegProcess() {
 
     // FFmpeg 명령어 설정 (rawvideo를 stdout으로 출력하도록)
     arguments << "-protocol_whitelist" << "file,tcp,udp,rtp,rtsp"
-              << "-i" << "rtsp://192.168.1.15:8554"
+              << "-i" << streaming_url//"rtsp://192.168.1.15:8554"
               << "-s" << "640x480"
               << "-pix_fmt" << "rgb24"  // 픽셀 포맷을 raw RGB로 설정
               << "-f" << "rawvideo"  // 출력을 raw 비디오로 설정
@@ -87,6 +92,11 @@ void rtpClient::startFFmpegProcess() {
     connect(ffmpegProcess, &QProcess::readyReadStandardError, this, [this]() {
         QByteArray errorOutput = ffmpegProcess->readAllStandardError();
         if (!errorOutput.isEmpty()) {
+            if(errorOutput.contains("failed")||errorOutput.contains("No such file")||errorOutput.contains("not found"))
+            {
+                emit signal_stream_fail();
+                emit signal_ffmpeg_debug("FFmpeg error output:"+errorOutput);
+            }
             emit signal_ffmpeg_debug("FFmpeg error output:"+errorOutput);
         }
     });
@@ -96,6 +106,7 @@ void rtpClient::startFFmpegProcess() {
         qDebug() << "FFmpeg 실행 실패: " << ffmpegProcess->errorString();
     } else {
         qDebug() << "FFmpeg 스트리밍 시작 중...";
+        emit signal_streaming_start();
         QObject::connect(ffmpegProcess, &QProcess::readyReadStandardOutput, this, &rtpClient::readFFmpegOutput);
     }
 }

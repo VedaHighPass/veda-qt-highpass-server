@@ -26,8 +26,15 @@ videoStream::videoStream(QWidget *parent) :
     ui(new Ui::videoStream)
 {
     ui->setupUi(this);
+    ui->widget_3->hide();
     connect(this,SIGNAL(signal_clikQuit()),rtpClient::instance(),SLOT(slot_quitBtn()));
     connect(rtpClient::instance(),SIGNAL(signal_ffmpeg_debug(QString)),this,SLOT(slot_ffmpeg_debug(QString)));
+    connect(rtpClient::instance(),SIGNAL(signal_streaming_start()),this,SLOT(slot_streaming_start()));
+    connect(rtpClient::instance(),SIGNAL(signal_video_start()),this,SLOT(slot_video_start()));
+    connect(this,SIGNAL(send_url(QString)),rtpClient::instance(),SLOT(recv_url(QString)));
+    connect(rtpClient::instance(),SIGNAL(signal_stream_fail()),this,SLOT(slot_streaming_fail()));
+
+
 }
 
 videoStream::~videoStream()
@@ -38,6 +45,8 @@ videoStream::~videoStream()
 void videoStream::on_startBtn_clicked()
 {
     rtpClient::instance()->videoLabel = ui->video_label;
+    QString url = ui->lineEdit->text();
+    emit send_url(url);
     rtpClient::instance()->startFFmpegProcess();
     qDebug() << "start ffmpeg";
 }
@@ -115,5 +124,18 @@ void videoStream::on_btnSearchDB_clicked()
        // QString recordStr = recordStrList.join("\n");
         //QMessageBox::information(this, "Plate Records", recordStr);
     }
+}
+void videoStream::slot_streaming_start()
+{
+    ui->widget_3->show();
+}
+void videoStream::slot_video_start()
+{
+    ui->widget->hide();
+}
+void videoStream::slot_streaming_fail()
+{
+    ui->widget->show();
+    ui->widget_3->hide();
 }
 
