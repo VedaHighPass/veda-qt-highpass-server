@@ -35,7 +35,7 @@ QList<QVariantMap> convertToQVariantMapList(const QStringList& stringList) {
     QList<QVariantMap> result;
 
     for (const QString& str : stringList) {
-        QStringList fields = str.split(","); // Assuming fields are comma-separated
+        QStringList fields = str.split(","); // Assuming fields are comma-separate
         if (fields.size() < 4) {
             qWarning() << "Skipping malformed entry:" << str;
             continue;

@@ -272,7 +272,7 @@ font: bold 20pt &quot;Sans Serif&quot;;</string>
 background-color: rgb(255, 255, 255);</string>
    </property>
    <property name="text">
-    <string>Quit</string>
+    <string>Disconnect</string>
    </property>
   </widget>
   <widget class="QPushButton" name="pauseBtn">

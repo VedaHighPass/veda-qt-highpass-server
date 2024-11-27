@@ -40,7 +40,7 @@ MainWindow::~MainWindow()
 
 //void MainWindow::on_btnConnectDB_clicked()
 //{
-//    if (DatabaseManager::instance().connectToDatabase("/home/iam/veda_project/veda-qt-highpass-server/highpassQ/gotomars.db")) {
+//    if (DatabaseManager::instance().connectToDatabase("gotomars.db")) {
 //        QMessageBox::information(this, "Success", "Connected to gotomars.db");
 //    } else {
 //        QMessageBox::critical(this, "Error", "Failed to connect to gotomars.db");

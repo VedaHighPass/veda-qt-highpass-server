@@ -2,7 +2,7 @@
 #define STREAM_UI_H
 
 #include <QWidget>
-
+#include "rtpclient.h"
 namespace Ui {
 class stream_ui;
 }
@@ -14,9 +14,12 @@ class stream_ui : public QWidget
 public:
     explicit stream_ui(QWidget *parent = nullptr);
     ~stream_ui();
+    rtpClient* rtpCli;
 
 private:
     Ui::stream_ui *ui;
+    QString url;
+
 
 private slots:
     void on_startBtn_clicked();
