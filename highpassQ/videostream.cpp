@@ -14,6 +14,7 @@
 #include "rtpclient.h"
 #include "DatabaseManager.h"
 #include "httpserver.h"
+#include "stream_ui.h"
 
 
 videoStream::videoStream(QWidget *parent) :
@@ -21,7 +22,6 @@ videoStream::videoStream(QWidget *parent) :
     ui(new Ui::videoStream)
 {
     ui->setupUi(this);
-    ui->widget_3->hide();
     ui->tabWidget_2->setContextMenuPolicy(Qt::CustomContextMenu);
     connect(this,SIGNAL(signal_clikQuit()),rtpClient::instance(),SLOT(slot_quitBtn()));
     connect(rtpClient::instance(),SIGNAL(signal_ffmpeg_debug(QString)),this,SLOT(slot_ffmpeg_debug(QString)));
@@ -44,34 +44,6 @@ QString getCurrentFormattedTime() {
 videoStream::~videoStream()
 {
     delete ui;
-}
-
-void videoStream::on_startBtn_clicked()
-{
-    rtpClient::instance()->videoLabel = ui->video_label;
-    QString url = ui->lineEdit->text();
-    //emit send_url(url);
-    rtpClient::instance()->startFFmpegProcess(url);
-    qDebug() << "start ffmpeg";
-}
-
-
-void videoStream::on_pauseBtn_clicked()
-{
-
-}
-
-
-void videoStream::on_restartBtn_clicked()
-{
-
-}
-
-
-void videoStream::on_quitBtn_clicked()
-{
-    emit signal_clikQuit();
-    this->hide();
 }
 
 void videoStream::slot_ffmpeg_debug(QString error)
@@ -129,19 +101,6 @@ void videoStream::on_btnSearchDB_clicked()
         //QMessageBox::information(this, "Plate Records", recordStr);
     }
 }
-void videoStream::slot_streaming_start()
-{
-    ui->widget_3->show();
-}
-void videoStream::slot_video_start()
-{
-    ui->widget->hide();
-}
-void videoStream::slot_streaming_fail()
-{
-    ui->widget->show();
-    ui->widget_3->hide();
-}
 
 void videoStream:: showContextMenu(const QPoint& pos) {
     QMenu menu(this);
@@ -152,7 +111,7 @@ void videoStream:: showContextMenu(const QPoint& pos) {
 }
 
  void videoStream:: addNewTab() {
-    QWidget* newTab = new QWidget();
-    QString tabName = QString("Tab %1").arg(ui->tabWidget_2->count() + 1);
+    QWidget* newTab = new stream_ui();
+    QString tabName = QString("CAM %1").arg(ui->tabWidget_2->count() + 1);
     ui->tabWidget_2->addTab(newTab, tabName);
 }

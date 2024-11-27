@@ -14,6 +14,7 @@ SOURCES += \
     main.cpp \
     mainwindow.cpp \
     rtpclient.cpp \
+    stream_ui.cpp \
     videostream.cpp
 
 HEADERS += \
@@ -21,10 +22,12 @@ HEADERS += \
     httpserver.h \
     mainwindow.h \
     rtpclient.h \
+    stream_ui.h \
     videostream.h
 
 FORMS += \
     mainwindow.ui \
+    stream_ui.ui \
     videostream.ui
 
 # Default rules for deployment.
