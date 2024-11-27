@@ -29,7 +29,7 @@
     <string notr="true"/>
    </property>
    <property name="currentIndex">
-    <number>0</number>
+    <number>1</number>
    </property>
    <widget class="QWidget" name="video">
     <attribute name="title">
@@ -252,8 +252,25 @@ color:rgb(255, 255, 255);</string>
    </property>
    <widget class="QWidget" name="CAM1">
     <attribute name="title">
-     <string>CAM1</string>
+     <string/>
     </attribute>
+    <widget class="QLabel" name="label_4">
+     <property name="geometry">
+      <rect>
+       <x>60</x>
+       <y>10</y>
+       <width>491</width>
+       <height>191</height>
+      </rect>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">font: bold 15pt &quot;Sans Serif&quot;;</string>
+     </property>
+     <property name="text">
+      <string>If you want to register a new camera URL,
+ right-click</string>
+     </property>
+    </widget>
    </widget>
   </widget>
   <zorder>tabWidget_2</zorder>
