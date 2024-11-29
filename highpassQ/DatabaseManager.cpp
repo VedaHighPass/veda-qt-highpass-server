@@ -214,3 +214,74 @@ QList<QVariantMap> DatabaseManager::getRecordsByDateRange(const QDate &startDate
     return records;
 }
 
+QList<QVariantMap> DatabaseManager::getRecordsByFilters(
+    const QDate& startDate,
+    const QDate& endDate,
+    const QString& plateNumber,
+    const QList<int>& entryGates,
+    const QList<int>& exitGates
+    ) {
+    QList<QVariantMap> records;
+
+    // Build the SQL query dynamically to handle entryGates and exitGates
+    QString queryString = "SELECT * FROM HIGHPASS_RECORD WHERE DATE(EntryTime) BETWEEN :startDate AND :endDate";
+
+    // Add plate number condition
+    if (!plateNumber.isEmpty()) {
+        queryString += " AND PlateNumber = :plateNumber";
+    }
+
+    // Add entry gates condition
+    if (!entryGates.isEmpty()) {
+        QStringList entryPlaceholders;
+        for (int i = 0; i < entryGates.size(); ++i) {
+            entryPlaceholders.append(QString(":entryGate%1").arg(i));
+        }
+        queryString += QString(" AND EntryGateNumber IN (%1)").arg(entryPlaceholders.join(","));
+    }
+
+    // Add exit gates condition
+    if (!exitGates.isEmpty()) {
+        QStringList exitPlaceholders;
+        for (int i = 0; i < exitGates.size(); ++i) {
+            exitPlaceholders.append(QString(":exitGate%1").arg(i));
+        }
+        queryString += QString(" AND ExitGateNumber IN (%1)").arg(exitPlaceholders.join(","));
+    }
+
+    QSqlQuery query;
+    query.prepare(queryString);
+
+    // Bind values
+    query.bindValue(":startDate", startDate.toString("yyyy-MM-dd"));
+    query.bindValue(":endDate", endDate.toString("yyyy-MM-dd"));
+    if (!plateNumber.isEmpty()) {
+        query.bindValue(":plateNumber", plateNumber);
+    }
+    for (int i = 0; i < entryGates.size(); ++i) {
+        query.bindValue(QString(":entryGate%1").arg(i), entryGates[i]);
+    }
+    for (int i = 0; i < exitGates.size(); ++i) {
+        query.bindValue(QString(":exitGate%1").arg(i), exitGates[i]);
+    }
+
+    // Execute query
+    if (!query.exec()) {
+        qWarning() << "Error executing getRecordsByFilters:" << query.lastError().text();
+        return records;
+    }
+
+    // Process results
+    while (query.next()) {
+        QVariantMap record;
+        record["ID"] = query.value("ID").toInt();
+        record["PlateNumber"] = query.value("PlateNumber").toString();
+        record["EntryTime"] = query.value("EntryTime").toString();
+        record["EntryGateNumber"] = query.value("EntryGateNumber").toInt();
+        record["ExitTime"] = query.value("ExitTime").toString();
+        record["ExitGateNumber"] = query.value("ExitGateNumber").toInt();
+        records.append(record);
+    }
+
+    return records;
+}

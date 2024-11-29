@@ -125,7 +125,13 @@ public:
     bool insertExitStepBill(const QString& plateNumber, int exitGateID, int exitGateRecordID);
 
     QList<QVariantMap> getRecordsByDateRange(const QDate &startDate, const QDate &endDate);
-
+    QList<QVariantMap> getRecordsByFilters(
+        const QDate& startDate,
+        const QDate& endDate,
+        const QString& plateNumber,
+        const QList<int>& entryGates,
+        const QList<int>& exitGates
+        );
 private:
     QSqlDatabase db; /**< The database connection object. */
 

@@ -68,14 +68,14 @@ void HttpServer::handleRequest(QTcpSocket* socket) {
         QUrl url(path);
         QUrlQuery queryParams(url.query());
 
+        // Query Parameters
         QString startDateStr = queryParams.queryItemValue("startDate");
         QString endDateStr = queryParams.queryItemValue("endDate");
+        QString plateNumber = queryParams.queryItemValue("plateNumber");
+        QString entryGateStr = queryParams.queryItemValue("entryGate");
+        QString exitGateStr = queryParams.queryItemValue("exitGate");
 
-        // Default to a wide range if dates are not provided
-        if (startDateStr.isEmpty()) startDateStr = "1900-01-01"; // 기본 시작일
-        if (endDateStr.isEmpty()) endDateStr = "2099-12-31";     // 기본 종료일
-
-        // Validate the dates
+        // Validate Dates
         QDate startDate = QDate::fromString(startDateStr, "yyyy-MM-dd");
         QDate endDate = QDate::fromString(endDateStr, "yyyy-MM-dd");
 
@@ -84,14 +84,38 @@ void HttpServer::handleRequest(QTcpSocket* socket) {
             return;
         }
 
-        // Query database for records between the given dates
-        QList<QVariantMap> records = DatabaseManager::instance().getRecordsByDateRange(startDate, endDate);
+        // Parse entryGate and exitGate as lists of integers
+        QStringList entryGateList = entryGateStr.split(",", Qt::SkipEmptyParts);
+        QList<int> entryGates;
+        for (const QString& gate : entryGateList) {
+            bool ok;
+            int gateNumber = gate.toInt(&ok);
+            if (ok) {
+                entryGates.append(gateNumber);
+            }
+        }
 
+        QStringList exitGateList = exitGateStr.split(",", Qt::SkipEmptyParts);
+        QList<int> exitGates;
+        for (const QString& gate : exitGateList) {
+            bool ok;
+            int gateNumber = gate.toInt(&ok);
+            if (ok) {
+                exitGates.append(gateNumber);
+            }
+        }
+
+        // Query database
+        QList<QVariantMap> records = DatabaseManager::instance().getRecordsByFilters(
+            startDate, endDate, plateNumber, entryGates, exitGates
+            );
+
+        // Convert records to JSON
         QJsonArray jsonArray;
         for (const auto& record : records) {
             QJsonObject jsonObject;
             for (const auto& key : record.keys()) {
-                jsonObject[key] = QJsonValue::fromVariant(record[key]); // 모든 필드 자동 추가
+                jsonObject[key] = QJsonValue::fromVariant(record[key]);
             }
             jsonArray.append(jsonObject);
         }
@@ -99,40 +123,8 @@ void HttpServer::handleRequest(QTcpSocket* socket) {
         QJsonDocument jsonDoc(jsonArray);
         sendResponse(socket, jsonDoc.toJson(), 200);
     }
-
-    /*
-    if (method == "GET" && path == "/records") {
-        QList<QVariantMap> records = DatabaseManager::instance().getAllRecords(); // 데이터 가져오기
-        QJsonArray jsonArray;
-
-        for (const auto& record : records) {
-            QJsonObject jsonObject;
-            jsonObject["ID"] = record["ID"].toInt();
-            jsonObject["EntryTime"] = record["EntryTime"].toString();
-            jsonObject["PlateNumber"] = record["PlateNumber"].toString();
-            jsonObject["GateNumber"] = record["GateNumber"].toInt();
-            jsonArray.append(jsonObject);
-        }
-
-        QJsonDocument jsonDoc(jsonArray);
-        sendResponse(socket, jsonDoc.toJson(), 200);
-    } else if (method == "GET" && path == "/gates") {
-        // GATELIST 테이블에서 데이터 가져오기
-        QList<QVariantMap> gates = DatabaseManager::instance().getAllGates(); // GATELIST 데이터 가져오기
-        QJsonArray jsonArray;
-
-        for (const auto& gate : gates) {
-            QJsonObject jsonObject;
-            jsonObject["GateNumber"] = gate["GateNumber"].toInt();
-            jsonObject["GateName"] = gate["GateName"].toString();
-            jsonObject["isEnterGate"] = gate["isEnterGate"].toBool();
-            jsonObject["isExitGate"] = gate["isExitGate"].toBool();
-            jsonArray.append(jsonObject);
-        }
-
-        QJsonDocument jsonDoc(jsonArray);
-        sendResponse(socket, jsonDoc.toJson(), 200);
-    } else if (method == "POST" && path == "/records") {
+/*
+    else if (method == "POST" && path == "/records") {
         QString body = request.split("\r\n\r\n").last();
         QJsonDocument jsonDoc = QJsonDocument::fromJson(body.toUtf8());
         QJsonObject jsonObject = jsonDoc.object();
@@ -156,8 +148,8 @@ void HttpServer::handleRequest(QTcpSocket* socket) {
         } else {
             sendResponse(socket, "Failed to add record", 500);
         }
-    }*/
-
+    }
+*/
     else {
         sendResponse(socket, "Not Found", 404);
     }
