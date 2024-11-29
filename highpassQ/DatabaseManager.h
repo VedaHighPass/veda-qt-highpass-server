@@ -130,7 +130,8 @@ public:
         const QDate& endDate,
         const QString& plateNumber,
         const QList<int>& entryGates,
-        const QList<int>& exitGates
+        const QList<int>& exitGates,
+        int pageSize, int page
         );
 private:
     QSqlDatabase db; /**< The database connection object. */

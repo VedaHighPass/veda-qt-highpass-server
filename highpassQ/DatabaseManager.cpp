@@ -219,7 +219,8 @@ QList<QVariantMap> DatabaseManager::getRecordsByFilters(
     const QDate& endDate,
     const QString& plateNumber,
     const QList<int>& entryGates,
-    const QList<int>& exitGates
+    const QList<int>& exitGates,
+    int pageSize, int page
     ) {
     QList<QVariantMap> records;
 
@@ -249,6 +250,9 @@ QList<QVariantMap> DatabaseManager::getRecordsByFilters(
         queryString += QString(" AND ExitGateNumber IN (%1)").arg(exitPlaceholders.join(","));
     }
 
+    // Add pagination with LIMIT and OFFSET
+    queryString += " LIMIT :limit OFFSET :offset";
+
     QSqlQuery query;
     query.prepare(queryString);
 
@@ -264,6 +268,11 @@ QList<QVariantMap> DatabaseManager::getRecordsByFilters(
     for (int i = 0; i < exitGates.size(); ++i) {
         query.bindValue(QString(":exitGate%1").arg(i), exitGates[i]);
     }
+
+    // Calculate LIMIT and OFFSET for pagination
+    int offset = (page - 1) * pageSize;  // Calculate the offset based on the page number
+    query.bindValue(":limit", pageSize);
+    query.bindValue(":offset", offset);
 
     // Execute query
     if (!query.exec()) {
@@ -285,3 +294,4 @@ QList<QVariantMap> DatabaseManager::getRecordsByFilters(
 
     return records;
 }
+

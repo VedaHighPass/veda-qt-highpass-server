@@ -74,6 +74,8 @@ void HttpServer::handleRequest(QTcpSocket* socket) {
         QString plateNumber = queryParams.queryItemValue("plateNumber");
         QString entryGateStr = queryParams.queryItemValue("entryGate");
         QString exitGateStr = queryParams.queryItemValue("exitGate");
+        int pageSize = queryParams.queryItemValue("pageSize").toInt();
+        int page = queryParams.queryItemValue("page").toInt();
 
         // Validate Dates
         QDate startDate = QDate::fromString(startDateStr, "yyyy-MM-dd");
@@ -107,7 +109,7 @@ void HttpServer::handleRequest(QTcpSocket* socket) {
 
         // Query database
         QList<QVariantMap> records = DatabaseManager::instance().getRecordsByFilters(
-            startDate, endDate, plateNumber, entryGates, exitGates
+            startDate, endDate, plateNumber, entryGates, exitGates, pageSize, page
             );
 
         // Convert records to JSON
