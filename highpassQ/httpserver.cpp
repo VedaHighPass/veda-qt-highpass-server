@@ -5,7 +5,7 @@
 #include <QString>
 #include <QStringList>
 #include <QTcpServer>
-
+#include <QUrlQuery>
 HttpServer::HttpServer(DatabaseManager& dbManager, QObject* parent)
     : QTcpServer(parent), dbManager(dbManager) {}
 
@@ -31,6 +31,7 @@ void HttpServer::incomingConnection(qintptr socketDescriptor) {
     connect(socket, &QTcpSocket::disconnected, socket, &QTcpSocket::deleteLater);
 }
 
+// 안쓰는듯..?
 QList<QVariantMap> convertToQVariantMapList(const QStringList& stringList) {
     QList<QVariantMap> result;
 
@@ -52,6 +53,7 @@ QList<QVariantMap> convertToQVariantMapList(const QStringList& stringList) {
     return result;
 }
 
+
 void HttpServer::handleRequest(QTcpSocket* socket) {
     QByteArray requestData = socket->readAll();
     QString request = QString::fromUtf8(requestData);
@@ -61,6 +63,44 @@ void HttpServer::handleRequest(QTcpSocket* socket) {
     QTextStream stream(&request);
     stream >> method >> path;
 
+    if (method == "GET" && path.startsWith("/records")) {
+        // http://localhost:8080/records?startDate=2024-11-01&endDate=2024-11-30
+        QUrl url(path);
+        QUrlQuery queryParams(url.query());
+
+        QString startDateStr = queryParams.queryItemValue("startDate");
+        QString endDateStr = queryParams.queryItemValue("endDate");
+
+        // Default to a wide range if dates are not provided
+        if (startDateStr.isEmpty()) startDateStr = "1900-01-01"; // 기본 시작일
+        if (endDateStr.isEmpty()) endDateStr = "2099-12-31";     // 기본 종료일
+
+        // Validate the dates
+        QDate startDate = QDate::fromString(startDateStr, "yyyy-MM-dd");
+        QDate endDate = QDate::fromString(endDateStr, "yyyy-MM-dd");
+
+        if (!startDate.isValid() || !endDate.isValid()) {
+            sendResponse(socket, "Invalid date format. Use yyyy-MM-dd.", 400);
+            return;
+        }
+
+        // Query database for records between the given dates
+        QList<QVariantMap> records = DatabaseManager::instance().getRecordsByDateRange(startDate, endDate);
+
+        QJsonArray jsonArray;
+        for (const auto& record : records) {
+            QJsonObject jsonObject;
+            for (const auto& key : record.keys()) {
+                jsonObject[key] = QJsonValue::fromVariant(record[key]); // 모든 필드 자동 추가
+            }
+            jsonArray.append(jsonObject);
+        }
+
+        QJsonDocument jsonDoc(jsonArray);
+        sendResponse(socket, jsonDoc.toJson(), 200);
+    }
+
+    /*
     if (method == "GET" && path == "/records") {
         QList<QVariantMap> records = DatabaseManager::instance().getAllRecords(); // 데이터 가져오기
         QJsonArray jsonArray;
@@ -116,7 +156,9 @@ void HttpServer::handleRequest(QTcpSocket* socket) {
         } else {
             sendResponse(socket, "Failed to add record", 500);
         }
-    } else {
+    }*/
+
+    else {
         sendResponse(socket, "Not Found", 404);
     }
 }

@@ -1,4 +1,6 @@
 #include "DatabaseManager.h"
+#include <QDate>
+#include <QSqlRecord>
 
 DatabaseManager& DatabaseManager::instance() {
     static DatabaseManager instance;
@@ -37,6 +39,7 @@ bool DatabaseManager::connectToDatabase(const QString& dbName) {
     return true;
 }
 
+// INSERT, UPDATE, DELETE
 bool DatabaseManager::executeQuery(const QString& queryStr) {
     QSqlQuery query;
     if (!query.exec(queryStr)) {
@@ -46,6 +49,7 @@ bool DatabaseManager::executeQuery(const QString& queryStr) {
     return true;
 }
 
+// SELECT
 QSqlQuery DatabaseManager::executeSelectQuery(const QString& queryStr) {
     QSqlQuery query;
     if (!query.exec(queryStr)) {
@@ -88,6 +92,7 @@ QList<QVariantMap> DatabaseManager::getAllGates() {
     return gateList;
 }
 
+//GATELIST에서 gaetNumber가 출구번호면 true, 아니면 false
 bool DatabaseManager::checkIsEnterGate(int gateNumber) {
     QSqlQuery query;
     query.prepare("SELECT isEnterGate, isExitGate FROM GATELIST WHERE GateNumber = :GateNumber");
@@ -172,3 +177,40 @@ bool DatabaseManager::insertExitStepBill(const QString& plateNumber, int exitGat
         return false; // 해당 PlateNumber가 없거나 첫 번째 입력이 없는 경우
     }
 }
+
+QList<QVariantMap> DatabaseManager::getRecordsByDateRange(const QDate &startDate, const QDate &endDate) {
+    QList<QVariantMap> records;
+
+    // SQL 쿼리 준비
+    QSqlQuery query;
+    query.prepare("SELECT * "
+                  "FROM HIGHPASS_RECORD "
+                  "WHERE DATE(EntryTime) BETWEEN :startDate AND :endDate "
+                  "OR DATE(ExitTime) BETWEEN :startDate AND :endDate");
+
+
+    // 바인딩 변수 설정
+    QString startDateStr = startDate.toString("yyyy-MM-dd");
+    QString endDateStr = endDate.toString("yyyy-MM-dd");
+
+    query.bindValue(":startDate", startDateStr);
+    query.bindValue(":endDate", endDateStr);
+
+    // 쿼리 실행
+    if (!query.exec()) {
+        qWarning() << "Error executing getRecordsByDateRange:" << query.lastError().text();
+        return records; // 빈 리스트 반환
+    }
+
+    // 결과 처리: 모든 컬럼을 동적으로 처리
+    while (query.next()) {
+        QVariantMap record;
+        for (int i = 0; i < query.record().count(); ++i) {
+            QString columnName = query.record().fieldName(i); // 컬럼 이름 가져오기
+            record[columnName] = query.value(i);             // 컬럼 값 저장
+        }
+        records.append(record);
+    }
+    return records;
+}
+

@@ -124,6 +124,8 @@ public:
      */
     bool insertExitStepBill(const QString& plateNumber, int exitGateID, int exitGateRecordID);
 
+    QList<QVariantMap> getRecordsByDateRange(const QDate &startDate, const QDate &endDate);
+
 private:
     QSqlDatabase db; /**< The database connection object. */
 
