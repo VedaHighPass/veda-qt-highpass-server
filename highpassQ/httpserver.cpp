@@ -31,29 +31,6 @@ void HttpServer::incomingConnection(qintptr socketDescriptor) {
     connect(socket, &QTcpSocket::disconnected, socket, &QTcpSocket::deleteLater);
 }
 
-// 안쓰는듯..?
-QList<QVariantMap> convertToQVariantMapList(const QStringList& stringList) {
-    QList<QVariantMap> result;
-
-    for (const QString& str : stringList) {
-        QStringList fields = str.split(","); // Assuming fields are comma-separated
-        if (fields.size() < 4) {
-            qWarning() << "Skipping malformed entry:" << str;
-            continue;
-        }
-
-        QVariantMap map;
-        map["ID"] = fields[0].trimmed();
-        map["EntryTime"] = fields[1].trimmed();
-        map["PlateNumber"] = fields[2].trimmed();
-        map["GateNumber"] = fields[3].trimmed();
-        result.append(map);
-    }
-
-    return result;
-}
-
-
 void HttpServer::handleRequest(QTcpSocket* socket) {
     QByteArray requestData = socket->readAll();
     QString request = QString::fromUtf8(requestData);
@@ -129,6 +106,37 @@ void HttpServer::handleRequest(QTcpSocket* socket) {
 
         QJsonDocument jsonDoc(response);
         sendResponse(socket, jsonDoc.toJson(), 200);
+    } else if (method == "GET" && path.startsWith("/images/")){
+        // 요청된 경로를 실제 파일 시스템 경로로 변환
+        QString filePath = QString("C:/Users/3kati/Desktop/db_qt/images") + path.mid(7); // "/images/" 이후 경로 추가
+        QFile file(filePath);
+
+        // 파일 존재 여부 확인
+        if (!file.exists()) {
+            sendResponse(socket, "Image not found", 404);
+            return;
+        }
+
+        // 파일 열기
+        if (!file.open(QIODevice::ReadOnly)) {
+            sendResponse(socket, "Failed to open image", 500);
+            return;
+        }
+
+        QByteArray imageData = file.readAll();
+        file.close();
+
+        // 이미지 데이터를 반환
+        QByteArray httpResponse = QString("HTTP/1.1 200 OK\r\n"
+                                          "Content-Type: image/jpeg\r\n"
+                                          "Content-Length: %1\r\n\r\n")
+                                      .arg(imageData.size())
+                                      .toUtf8();
+        httpResponse.append(imageData);
+        socket->write(httpResponse);
+        socket->flush();
+        socket->disconnectFromHost();
+        return;
     }
 /*
     else if (method == "POST" && path == "/records") {
