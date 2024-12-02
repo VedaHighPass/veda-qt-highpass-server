@@ -64,7 +64,7 @@ void HttpServer::handleRequest(QTcpSocket* socket) {
     stream >> method >> path;
 
     if (method == "GET" && path.startsWith("/records")) {
-        // http://localhost:8080/records?startDate=2024-11-01&endDate=2024-11-30
+        // http://127.0.0.1:8080/records?startDate=2024-11-13&endDate=2024-11-23&pageSize=10&page=1
         QUrl url(path);
         QUrlQuery queryParams(url.query());
 
@@ -107,14 +107,14 @@ void HttpServer::handleRequest(QTcpSocket* socket) {
             }
         }
 
-        // Query database
-        QList<QVariantMap> records = DatabaseManager::instance().getRecordsByFilters(
+        // Fetch records using the updated DatabaseResult structure
+        DatabaseResult result = DatabaseManager::instance().getRecordsByFilters(
             startDate, endDate, plateNumber, entryGates, exitGates, pageSize, page
             );
 
-        // Convert records to JSON
+        // JSON 변환 및 응답 생성
         QJsonArray jsonArray;
-        for (const auto& record : records) {
+        for (const auto& record : result.records) {
             QJsonObject jsonObject;
             for (const auto& key : record.keys()) {
                 jsonObject[key] = QJsonValue::fromVariant(record[key]);
@@ -122,7 +122,12 @@ void HttpServer::handleRequest(QTcpSocket* socket) {
             jsonArray.append(jsonObject);
         }
 
-        QJsonDocument jsonDoc(jsonArray);
+        // 전체 레코드 수와 데이터를 포함한 응답 생성
+        QJsonObject response;
+        response["data"] = jsonArray;
+        response["totalRecords"] = result.totalRecords;
+
+        QJsonDocument jsonDoc(response);
         sendResponse(socket, jsonDoc.toJson(), 200);
     }
 /*

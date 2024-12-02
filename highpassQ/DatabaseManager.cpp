@@ -178,43 +178,7 @@ bool DatabaseManager::insertExitStepBill(const QString& plateNumber, int exitGat
     }
 }
 
-QList<QVariantMap> DatabaseManager::getRecordsByDateRange(const QDate &startDate, const QDate &endDate) {
-    QList<QVariantMap> records;
-
-    // SQL 쿼리 준비
-    QSqlQuery query;
-    query.prepare("SELECT * "
-                  "FROM HIGHPASS_RECORD "
-                  "WHERE DATE(EntryTime) BETWEEN :startDate AND :endDate "
-                  "OR DATE(ExitTime) BETWEEN :startDate AND :endDate");
-
-
-    // 바인딩 변수 설정
-    QString startDateStr = startDate.toString("yyyy-MM-dd");
-    QString endDateStr = endDate.toString("yyyy-MM-dd");
-
-    query.bindValue(":startDate", startDateStr);
-    query.bindValue(":endDate", endDateStr);
-
-    // 쿼리 실행
-    if (!query.exec()) {
-        qWarning() << "Error executing getRecordsByDateRange:" << query.lastError().text();
-        return records; // 빈 리스트 반환
-    }
-
-    // 결과 처리: 모든 컬럼을 동적으로 처리
-    while (query.next()) {
-        QVariantMap record;
-        for (int i = 0; i < query.record().count(); ++i) {
-            QString columnName = query.record().fieldName(i); // 컬럼 이름 가져오기
-            record[columnName] = query.value(i);             // 컬럼 값 저장
-        }
-        records.append(record);
-    }
-    return records;
-}
-
-QList<QVariantMap> DatabaseManager::getRecordsByFilters(
+DatabaseResult DatabaseManager::getRecordsByFilters(
     const QDate& startDate,
     const QDate& endDate,
     const QString& plateNumber,
@@ -222,14 +186,14 @@ QList<QVariantMap> DatabaseManager::getRecordsByFilters(
     const QList<int>& exitGates,
     int pageSize, int page
     ) {
-    QList<QVariantMap> records;
+    DatabaseResult result;
 
-    // Build the SQL query dynamically to handle entryGates and exitGates
-    QString queryString = "SELECT * FROM HIGHPASS_RECORD WHERE DATE(EntryTime) BETWEEN :startDate AND :endDate";
+    // Build the base SQL query
+    QString baseQuery = "FROM HIGHPASS_RECORD WHERE DATE(EntryTime) BETWEEN :startDate AND :endDate";
 
     // Add plate number condition
     if (!plateNumber.isEmpty()) {
-        queryString += " AND PlateNumber = :plateNumber";
+        baseQuery += " AND PlateNumber = :plateNumber";
     }
 
     // Add entry gates condition
@@ -238,7 +202,7 @@ QList<QVariantMap> DatabaseManager::getRecordsByFilters(
         for (int i = 0; i < entryGates.size(); ++i) {
             entryPlaceholders.append(QString(":entryGate%1").arg(i));
         }
-        queryString += QString(" AND EntryGateNumber IN (%1)").arg(entryPlaceholders.join(","));
+        baseQuery += QString(" AND EntryGateNumber IN (%1)").arg(entryPlaceholders.join(","));
     }
 
     // Add exit gates condition
@@ -247,51 +211,71 @@ QList<QVariantMap> DatabaseManager::getRecordsByFilters(
         for (int i = 0; i < exitGates.size(); ++i) {
             exitPlaceholders.append(QString(":exitGate%1").arg(i));
         }
-        queryString += QString(" AND ExitGateNumber IN (%1)").arg(exitPlaceholders.join(","));
+        baseQuery += QString(" AND ExitGateNumber IN (%1)").arg(exitPlaceholders.join(","));
     }
 
-    // Add pagination with LIMIT and OFFSET
-    queryString += " LIMIT :limit OFFSET :offset";
-
-    QSqlQuery query;
-    query.prepare(queryString);
-
-    // Bind values
-    query.bindValue(":startDate", startDate.toString("yyyy-MM-dd"));
-    query.bindValue(":endDate", endDate.toString("yyyy-MM-dd"));
+    // Query to calculate total record count
+    QString countQueryStr = "SELECT COUNT(*) " + baseQuery;
+    QSqlQuery countQuery;
+    countQuery.prepare(countQueryStr);
+    countQuery.bindValue(":startDate", startDate.toString("yyyy-MM-dd"));
+    countQuery.bindValue(":endDate", endDate.toString("yyyy-MM-dd"));
     if (!plateNumber.isEmpty()) {
-        query.bindValue(":plateNumber", plateNumber);
+        countQuery.bindValue(":plateNumber", plateNumber);
     }
     for (int i = 0; i < entryGates.size(); ++i) {
-        query.bindValue(QString(":entryGate%1").arg(i), entryGates[i]);
+        countQuery.bindValue(QString(":entryGate%1").arg(i), entryGates[i]);
     }
     for (int i = 0; i < exitGates.size(); ++i) {
-        query.bindValue(QString(":exitGate%1").arg(i), exitGates[i]);
+        countQuery.bindValue(QString(":exitGate%1").arg(i), exitGates[i]);
+    }
+
+    if (!countQuery.exec()) {
+        qWarning() << "Error executing count query:" << countQuery.lastError().text();
+        return result;
+    }
+
+    if (countQuery.next()) {
+        result.totalRecords = countQuery.value(0).toInt();
+    }
+
+    // Query to fetch paginated records
+    QString dataQueryStr = "SELECT * " + baseQuery + " LIMIT :limit OFFSET :offset";
+    QSqlQuery dataQuery;
+    dataQuery.prepare(dataQueryStr);
+    dataQuery.bindValue(":startDate", startDate.toString("yyyy-MM-dd"));
+    dataQuery.bindValue(":endDate", endDate.toString("yyyy-MM-dd"));
+    if (!plateNumber.isEmpty()) {
+        dataQuery.bindValue(":plateNumber", plateNumber);
+    }
+    for (int i = 0; i < entryGates.size(); ++i) {
+        dataQuery.bindValue(QString(":entryGate%1").arg(i), entryGates[i]);
+    }
+    for (int i = 0; i < exitGates.size(); ++i) {
+        dataQuery.bindValue(QString(":exitGate%1").arg(i), exitGates[i]);
     }
 
     // Calculate LIMIT and OFFSET for pagination
-    int offset = (page - 1) * pageSize;  // Calculate the offset based on the page number
-    query.bindValue(":limit", pageSize);
-    query.bindValue(":offset", offset);
+    int offset = (page - 1) * pageSize;
+    dataQuery.bindValue(":limit", pageSize);
+    dataQuery.bindValue(":offset", offset);
 
-    // Execute query
-    if (!query.exec()) {
-        qWarning() << "Error executing getRecordsByFilters:" << query.lastError().text();
-        return records;
+    if (!dataQuery.exec()) {
+        qWarning() << "Error executing data query:" << dataQuery.lastError().text();
+        return result;
     }
 
-    // Process results
-    while (query.next()) {
+    // Process query results
+    while (dataQuery.next()) {
         QVariantMap record;
-        record["ID"] = query.value("ID").toInt();
-        record["PlateNumber"] = query.value("PlateNumber").toString();
-        record["EntryTime"] = query.value("EntryTime").toString();
-        record["EntryGateNumber"] = query.value("EntryGateNumber").toInt();
-        record["ExitTime"] = query.value("ExitTime").toString();
-        record["ExitGateNumber"] = query.value("ExitGateNumber").toInt();
-        records.append(record);
+        record["ID"] = dataQuery.value("ID").toInt();
+        record["PlateNumber"] = dataQuery.value("PlateNumber").toString();
+        record["EntryTime"] = dataQuery.value("EntryTime").toString();
+        record["EntryGateNumber"] = dataQuery.value("EntryGateNumber").toInt();
+        record["ExitTime"] = dataQuery.value("ExitTime").toString();
+        record["ExitGateNumber"] = dataQuery.value("ExitGateNumber").toInt();
+        result.records.append(record);
     }
 
-    return records;
+    return result;
 }
-
