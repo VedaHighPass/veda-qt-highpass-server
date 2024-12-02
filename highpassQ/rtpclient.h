@@ -21,7 +21,7 @@ public:
     QLabel *videoLabel = nullptr;
 
 private:
-
+    QByteArray* buffer;
 
     //QString streaming_url;
 public slots:

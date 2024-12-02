@@ -10,8 +10,10 @@ rtpClient* rtpClient::instance() {
     return &instance;
 }
 
-rtpClient::rtpClient() {}
-static QByteArray buffer;
+rtpClient::rtpClient() {
+    buffer = new QByteArray;
+}
+
 void rtpClient::readFFmpegOutput() {
     QByteArray data = ffmpegProcess->readAllStandardOutput();
     qDebug()<<"QProcess readChanel?: "<<ffmpegProcess->readChannel();
@@ -20,12 +22,12 @@ void rtpClient::readFFmpegOutput() {
     }
     // 데이터의 크기 확인
    // qDebug() << "Received data size:" << data.size();
-    buffer.append(data);
+    buffer->append(data);
   //  qDebug() << "Received buffer size:" << buffer.size();
     // raw RGB 데이터로 가정하고 QImage로 변환
-    if (buffer.size() >= 640 * 480 * 3) {  // 해상도 640x480에 대해 RGB는 3바이트 픽셀
-         QByteArray frameData = buffer.left(640 * 480 * 3);
-          buffer.remove(0, 640 * 480 * 3);
+    if (buffer->size() >= 640 * 480 * 3) {  // 해상도 640x480에 대해 RGB는 3바이트 픽셀
+         QByteArray frameData = buffer->left(640 * 480 * 3);
+          buffer->remove(0, 640 * 480 * 3);
         // qDebug() << "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!";
 
         QImage image(reinterpret_cast<const uchar*>(frameData.data()), 640, 480, QImage::Format_RGB888);
