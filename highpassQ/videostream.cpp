@@ -8,6 +8,7 @@
 #include <QString>
 #include <QMenu>
 #include <QTabWidget>
+#include <QMdiSubWindow>
 
 #include "videostream.h"
 #include "ui_videostream.h"
@@ -47,7 +48,7 @@ void videoStream::slot_ffmpeg_debug(QString error,rtpClient* textedit_key)
    {
        map_textedit[textedit_key]->append(error);
    }
-   qDebug()<<error;
+   //qDebug()<<error;
    // ui->textEdit->append(error);
 }
 
@@ -111,11 +112,17 @@ void videoStream:: showContextMenu(const QPoint& pos) {
 }
 
  void videoStream:: addNewTab() {
+    //QMdiSubWindow* newWidget = new QMdiSubWindow();
     stream_ui* newTab = new stream_ui();
-    QString tabName = QString("CAM %1").arg(ui->tabWidget_2->count());
-    ui->tabWidget_2->addTab(newTab, tabName);
+     //newWidget->setWidget(newTab);
+    //QString tabName = QString("CAM %1").arg(ui->tabWidget_2->count());
+    //ui->tabWidget_2->addTab(newTab, tabName);
+    newTab->setWindowTitle(QString("CAM %1").arg(ui->mdiArea->subWindowList().size()+1));
+    ui->mdiArea->addSubWindow(newTab);
+    newTab->show();
     QTextEdit *newDebug = new QTextEdit();
-    ui->tabWidget->addTab(newDebug,QString("CAM %1").arg(ui->tabWidget_2->count()-1));
+
+    ui->tabWidget->addTab(newDebug,QString("CAM %1").arg(ui->mdiArea->subWindowList().size()));
     connect(newTab->rtpCli,SIGNAL(signal_ffmpeg_debug(QString,rtpClient*)),this,SLOT(slot_ffmpeg_debug(QString,rtpClient*)));
     map_textedit.insert(newTab->rtpCli,newDebug);
      qDebug() << "Created new tab with stream_ui object at address: " << newTab;

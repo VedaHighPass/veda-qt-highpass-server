@@ -16,7 +16,6 @@ rtpClient::rtpClient() {
 
 void rtpClient::readFFmpegOutput() {
     QByteArray data = ffmpegProcess->readAllStandardOutput();
-    qDebug()<<"QProcess readChanel?: "<<ffmpegProcess->readChannel();
     if (data.isEmpty()) {
         qDebug() << "No data from ffmpeg. Check the process and arguments.";
     }
@@ -96,7 +95,7 @@ void rtpClient::startFFmpegProcess(QString url) {
     connect(ffmpegProcess, &QProcess::readyReadStandardError, this, [this]() {
         QByteArray errorOutput = ffmpegProcess->readAllStandardError();
         if (!errorOutput.isEmpty()) {
-            if(errorOutput.contains("failed")||errorOutput.contains("No such file")||errorOutput.contains("not found")||errorOutput.contains("Invalid argument"))
+            if(errorOutput.contains("failed")||errorOutput.contains("No such file")||errorOutput.contains("not found")||errorOutput.contains("Invalid argument")||errorOutput.contains("Bad Request"))
             {
                 emit signal_stream_fail();
                 emit signal_ffmpeg_debug("FFmpeg error output:"+errorOutput,this);

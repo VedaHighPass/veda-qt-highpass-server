@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1080</width>
-    <height>720</height>
+    <width>2160</width>
+    <height>1480</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -19,17 +19,17 @@
   <widget class="QTabWidget" name="tabWidget">
    <property name="geometry">
     <rect>
-     <x>680</x>
+     <x>1761</x>
      <y>85</y>
      <width>391</width>
-     <height>621</height>
+     <height>1381</height>
     </rect>
    </property>
    <property name="styleSheet">
     <string notr="true"/>
    </property>
    <property name="currentIndex">
-    <number>1</number>
+    <number>0</number>
    </property>
    <widget class="QWidget" name="video">
     <attribute name="title">
@@ -50,7 +50,7 @@ font: bold 15pt &quot;Sans Serif&quot;;
 color:rgb(255, 255, 255);</string>
      </property>
      <property name="text">
-      <string>  Streaming Debug</string>
+      <string>  Streaming Guid</string>
      </property>
     </widget>
     <widget class="QTextEdit" name="textEdit">
@@ -59,7 +59,7 @@ color:rgb(255, 255, 255);</string>
        <x>0</x>
        <y>40</y>
        <width>390</width>
-       <height>554</height>
+       <height>1311</height>
       </rect>
      </property>
      <property name="cursor" stdset="0">
@@ -78,6 +78,16 @@ color:rgb(42, 42, 42);</string>
      </property>
      <property name="sizeAdjustPolicy">
       <enum>QAbstractScrollArea::AdjustToContents</enum>
+     </property>
+     <property name="html">
+      <string>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
+&lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
+p, li { white-space: pre-wrap; }
+&lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:'Sans Serif'; font-size:8pt; font-weight:600; font-style:normal;&quot;&gt;
+&lt;p align=&quot;center&quot; style=&quot;-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;br /&gt;&lt;/p&gt;
+&lt;p align=&quot;center&quot; style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-size:12pt;&quot;&gt;If you want to register a new camera URL, right-click&lt;/span&gt;&lt;/p&gt;
+&lt;p align=&quot;center&quot; style=&quot;-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-size:12pt;&quot;&gt;&lt;br /&gt;&lt;/p&gt;
+&lt;p align=&quot;center&quot; style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-size:12pt;&quot;&gt;If you make new Window you can see error message!&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
      </property>
     </widget>
    </widget>
@@ -206,8 +216,8 @@ font:bold 8pt &quot;Sans Serif&quot;;
       </widget>
      </widget>
     </widget>
-    <zorder>scrollArea</zorder>
     <zorder>label_6</zorder>
+    <zorder>scrollArea</zorder>
     <zorder>label</zorder>
     <zorder>btnSearchDB</zorder>
     <zorder>btnInsertDB</zorder>
@@ -219,7 +229,7 @@ font:bold 8pt &quot;Sans Serif&quot;;
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1080</width>
+     <width>2160</width>
      <height>71</height>
     </rect>
    </property>
@@ -237,8 +247,8 @@ color:rgb(255, 255, 255);</string>
     <rect>
      <x>10</x>
      <y>85</y>
-     <width>661</width>
-     <height>621</height>
+     <width>1741</width>
+     <height>1383</height>
     </rect>
    </property>
    <property name="currentIndex">
@@ -254,21 +264,14 @@ color:rgb(255, 255, 255);</string>
     <attribute name="title">
      <string/>
     </attribute>
-    <widget class="QLabel" name="label_4">
+    <widget class="QMdiArea" name="mdiArea">
      <property name="geometry">
       <rect>
-       <x>60</x>
-       <y>10</y>
-       <width>491</width>
-       <height>191</height>
+       <x>0</x>
+       <y>0</y>
+       <width>1741</width>
+       <height>1353</height>
       </rect>
-     </property>
-     <property name="styleSheet">
-      <string notr="true">font: bold 15pt &quot;Sans Serif&quot;;</string>
-     </property>
-     <property name="text">
-      <string>If you want to register a new camera URL,
- right-click</string>
      </property>
     </widget>
    </widget>
