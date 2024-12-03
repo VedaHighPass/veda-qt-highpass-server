@@ -2,7 +2,9 @@
 #define VIDEOSTREAM_H
 
 #include <QWidget>
-
+#include <QMap>
+class QTextEdit;
+class rtpClient;
 namespace Ui {
 class videoStream;
 }
@@ -17,14 +19,7 @@ public:
 
 private slots:
 
-    void on_startBtn_clicked();
-
-    void on_pauseBtn_clicked();
-
-    void on_restartBtn_clicked();
-
-    void on_quitBtn_clicked();
-    void slot_ffmpeg_debug(QString error);
+    void slot_ffmpeg_debug(QString error,rtpClient* textedit_key);
 
     void on_btnConnectDB_clicked();
 
@@ -38,8 +33,10 @@ private slots:
     void addNewTab();
 private:
     Ui::videoStream *ui;
+    QMap <rtpClient*,QTextEdit*> map_textedit;
 signals:
     void signal_clikQuit();
+    //void signal_clikQuit();
    // void send_url(QString url);
 };
 

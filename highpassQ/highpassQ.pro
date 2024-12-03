@@ -10,21 +10,27 @@ CONFIG += c++17
 
 SOURCES += \
     DatabaseManager.cpp \
+    carregister.cpp \
     httpserver.cpp \
     main.cpp \
     mainwindow.cpp \
     rtpclient.cpp \
+    stream_ui.cpp \
     videostream.cpp
 
 HEADERS += \
     DatabaseManager.h \
+    carregister.h \
     httpserver.h \
     mainwindow.h \
     rtpclient.h \
+    stream_ui.h \
     videostream.h
 
 FORMS += \
+    carregister.ui \
     mainwindow.ui \
+    stream_ui.ui \
     videostream.ui
 
 # Default rules for deployment.
