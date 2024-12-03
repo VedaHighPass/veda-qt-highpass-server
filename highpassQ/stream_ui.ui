@@ -6,139 +6,42 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>657</width>
-    <height>591</height>
+    <width>639</width>
+    <height>475</height>
    </rect>
   </property>
-  <property name="minimumSize">
-   <size>
-    <width>657</width>
-    <height>591</height>
-   </size>
+  <property name="sizePolicy">
+   <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+    <horstretch>0</horstretch>
+    <verstretch>0</verstretch>
+   </sizepolicy>
   </property>
   <property name="windowTitle">
    <string>Form</string>
   </property>
-  <widget class="QLabel" name="label_4">
-   <property name="geometry">
-    <rect>
-     <x>0</x>
-     <y>-1</y>
-     <width>657</width>
-     <height>591</height>
-    </rect>
-   </property>
-   <property name="minimumSize">
-    <size>
-     <width>657</width>
-     <height>591</height>
-    </size>
-   </property>
-   <property name="styleSheet">
-    <string notr="true">background-color: rgb(62, 62, 62);</string>
-   </property>
-   <property name="text">
-    <string/>
-   </property>
-  </widget>
-  <widget class="QLabel" name="video_label">
-   <property name="geometry">
-    <rect>
-     <x>8</x>
-     <y>40</y>
-     <width>640</width>
-     <height>480</height>
-    </rect>
-   </property>
-   <property name="minimumSize">
-    <size>
-     <width>640</width>
-     <height>480</height>
-    </size>
-   </property>
-   <property name="maximumSize">
-    <size>
-     <width>640</width>
-     <height>480</height>
-    </size>
-   </property>
-   <property name="sizeIncrement">
-    <size>
-     <width>640</width>
-     <height>480</height>
-    </size>
-   </property>
-   <property name="baseSize">
-    <size>
-     <width>640</width>
-     <height>480</height>
-    </size>
-   </property>
-   <property name="styleSheet">
-    <string notr="true">background-image:url(:/images/videostreamback.png)</string>
-   </property>
-   <property name="text">
-    <string/>
-   </property>
-  </widget>
-  <widget class="QPushButton" name="restartBtn">
-   <property name="geometry">
-    <rect>
-     <x>130</x>
-     <y>530</y>
-     <width>100</width>
-     <height>45</height>
-    </rect>
-   </property>
-   <property name="minimumSize">
-    <size>
-     <width>100</width>
-     <height>45</height>
-    </size>
-   </property>
-   <property name="maximumSize">
-    <size>
-     <width>100</width>
-     <height>45</height>
-    </size>
-   </property>
-   <property name="styleSheet">
-    <string notr="true">font: bold 9pt &quot;Sans Serif&quot;;
-background-color: rgb(255, 255, 255);</string>
-   </property>
-   <property name="text">
-    <string>Restart</string>
-   </property>
-  </widget>
+  <property name="styleSheet">
+   <string notr="true">background-color: rgb(77, 77, 77);</string>
+  </property>
   <widget class="QWidget" name="widget_2" native="true">
    <property name="geometry">
     <rect>
-     <x>132</x>
-     <y>209</y>
+     <x>130</x>
+     <y>190</y>
      <width>401</width>
      <height>151</height>
     </rect>
+   </property>
+   <property name="sizePolicy">
+    <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+     <horstretch>0</horstretch>
+     <verstretch>0</verstretch>
+    </sizepolicy>
    </property>
    <property name="styleSheet">
     <string notr="true">background-color: rgb(188, 188, 188);
 border: 1px solid rgb(84, 84, 84);
 </string>
    </property>
-   <widget class="QLineEdit" name="lineEdit">
-    <property name="geometry">
-     <rect>
-      <x>10</x>
-      <y>90</y>
-      <width>261</width>
-      <height>31</height>
-     </rect>
-    </property>
-    <property name="styleSheet">
-     <string notr="true">background-color: rgb(255, 255, 255);
-border: 1px solid rgb(84, 84, 84);
-</string>
-    </property>
-   </widget>
    <widget class="QPushButton" name="startBtn">
     <property name="geometry">
      <rect>
@@ -147,6 +50,12 @@ border: 1px solid rgb(84, 84, 84);
       <width>100</width>
       <height>30</height>
      </rect>
+    </property>
+    <property name="sizePolicy">
+     <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+      <horstretch>0</horstretch>
+      <verstretch>0</verstretch>
+     </sizepolicy>
     </property>
     <property name="minimumSize">
      <size>
@@ -170,14 +79,44 @@ border: 1px solid rgb(84, 84, 84);
      <string>Start</string>
     </property>
    </widget>
+   <widget class="QLabel" name="label_8">
+    <property name="geometry">
+     <rect>
+      <x>1</x>
+      <y>1</y>
+      <width>401</width>
+      <height>41</height>
+     </rect>
+    </property>
+    <property name="sizePolicy">
+     <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+      <horstretch>0</horstretch>
+      <verstretch>0</verstretch>
+     </sizepolicy>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">color:rgb(255, 255, 255);
+font: bold 9pt &quot;Sans Serif&quot;;
+background-color: rgb(91, 91, 91);</string>
+    </property>
+    <property name="text">
+     <string>  Notice</string>
+    </property>
+   </widget>
    <widget class="QLabel" name="label_7">
     <property name="geometry">
      <rect>
-      <x>10</x>
+      <x>20</x>
       <y>50</y>
-      <width>381</width>
+      <width>371</width>
       <height>31</height>
      </rect>
+    </property>
+    <property name="sizePolicy">
+     <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+      <horstretch>0</horstretch>
+      <verstretch>0</verstretch>
+     </sizepolicy>
     </property>
     <property name="styleSheet">
      <string notr="true">font: bold 13pt &quot;Sans Serif&quot;;
@@ -189,22 +128,25 @@ border: 0px solid rgb(84, 84, 84);
      <string>Please enter a networ URL : </string>
     </property>
    </widget>
-   <widget class="QLabel" name="label_8">
+   <widget class="QLineEdit" name="lineEdit">
     <property name="geometry">
      <rect>
-      <x>0</x>
-      <y>0</y>
-      <width>401</width>
+      <x>20</x>
+      <y>90</y>
+      <width>261</width>
       <height>31</height>
      </rect>
     </property>
-    <property name="styleSheet">
-     <string notr="true">color:rgb(255, 255, 255);
-font: bold 9pt &quot;Sans Serif&quot;;
-background-color: rgb(91, 91, 91);</string>
+    <property name="sizePolicy">
+     <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+      <horstretch>0</horstretch>
+      <verstretch>0</verstretch>
+     </sizepolicy>
     </property>
-    <property name="text">
-     <string>  Notice</string>
+    <property name="styleSheet">
+     <string notr="true">background-color: rgb(255, 255, 255);
+border: 1px solid rgb(84, 84, 84);
+</string>
     </property>
    </widget>
    <widget class="QWidget" name="widget_3" native="true">
@@ -214,10 +156,16 @@ background-color: rgb(91, 91, 91);</string>
     <property name="geometry">
      <rect>
       <x>0</x>
-      <y>30</y>
+      <y>40</y>
       <width>401</width>
-      <height>121</height>
+      <height>111</height>
      </rect>
+    </property>
+    <property name="sizePolicy">
+     <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+      <horstretch>0</horstretch>
+      <verstretch>0</verstretch>
+     </sizepolicy>
     </property>
     <widget class="QLabel" name="label_13">
      <property name="geometry">
@@ -227,6 +175,12 @@ background-color: rgb(91, 91, 91);</string>
        <width>201</width>
        <height>41</height>
       </rect>
+     </property>
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
      </property>
      <property name="styleSheet">
       <string notr="true">font: bold 11pt &quot;Sans Serif&quot;;
@@ -239,89 +193,59 @@ border: 0px solid rgb(84, 84, 84);
      </property>
     </widget>
    </widget>
+   <zorder>label_8</zorder>
+   <zorder>startBtn</zorder>
+   <zorder>label_7</zorder>
+   <zorder>lineEdit</zorder>
+   <zorder>widget_3</zorder>
   </widget>
-  <widget class="QLabel" name="label_5">
+  <widget class="QLabel" name="video_label">
    <property name="geometry">
     <rect>
-     <x>300</x>
-     <y>5</y>
-     <width>81</width>
-     <height>31</height>
+     <x>0</x>
+     <y>0</y>
+     <width>640</width>
+     <height>480</height>
     </rect>
    </property>
-   <property name="styleSheet">
-    <string notr="true">color:rgb(255, 255, 255);
-background-color:transparent;
-font: bold 20pt &quot;Sans Serif&quot;;</string>
-   </property>
-   <property name="text">
-    <string>LIVE</string>
-   </property>
-  </widget>
-  <widget class="QPushButton" name="quitBtn">
-   <property name="geometry">
-    <rect>
-     <x>547</x>
-     <y>530</y>
-     <width>100</width>
-     <height>45</height>
-    </rect>
+   <property name="sizePolicy">
+    <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+     <horstretch>0</horstretch>
+     <verstretch>0</verstretch>
+    </sizepolicy>
    </property>
    <property name="minimumSize">
     <size>
-     <width>100</width>
-     <height>45</height>
+     <width>0</width>
+     <height>0</height>
     </size>
    </property>
-   <property name="maximumSize">
+   <property name="sizeIncrement">
     <size>
-     <width>100</width>
-     <height>45</height>
+     <width>1</width>
+     <height>1</height>
     </size>
+   </property>
+   <property name="baseSize">
+    <size>
+     <width>640</width>
+     <height>480</height>
+    </size>
+   </property>
+   <property name="font">
+    <font>
+     <stylestrategy>PreferAntialias</stylestrategy>
+    </font>
    </property>
    <property name="styleSheet">
-    <string notr="true">font: bold 9pt &quot;Sans Serif&quot;;
-background-color: rgb(255, 255, 255);</string>
+    <string notr="true">background-image:url(:/images/videostreamback.png)</string>
    </property>
    <property name="text">
-    <string>Disconnect</string>
+    <string/>
    </property>
   </widget>
-  <widget class="QPushButton" name="pauseBtn">
-   <property name="geometry">
-    <rect>
-     <x>10</x>
-     <y>530</y>
-     <width>100</width>
-     <height>45</height>
-    </rect>
-   </property>
-   <property name="minimumSize">
-    <size>
-     <width>100</width>
-     <height>45</height>
-    </size>
-   </property>
-   <property name="maximumSize">
-    <size>
-     <width>100</width>
-     <height>45</height>
-    </size>
-   </property>
-   <property name="styleSheet">
-    <string notr="true">font: bold 9pt &quot;Sans Serif&quot;;
-background-color: rgb(255, 255, 255);</string>
-   </property>
-   <property name="text">
-    <string>Pause</string>
-   </property>
-   <property name="checkable">
-    <bool>false</bool>
-   </property>
-   <property name="checked">
-    <bool>false</bool>
-   </property>
-  </widget>
+  <zorder>video_label</zorder>
+  <zorder>widget_2</zorder>
  </widget>
  <resources/>
  <connections/>

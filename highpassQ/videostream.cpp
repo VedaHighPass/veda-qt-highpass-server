@@ -114,6 +114,7 @@ void videoStream:: showContextMenu(const QPoint& pos) {
  void videoStream:: addNewTab() {
     //QMdiSubWindow* newWidget = new QMdiSubWindow();
     stream_ui* newTab = new stream_ui();
+    newTab->resize(640, 480);
      //newWidget->setWidget(newTab);
     //QString tabName = QString("CAM %1").arg(ui->tabWidget_2->count());
     //ui->tabWidget_2->addTab(newTab, tabName);
@@ -121,7 +122,6 @@ void videoStream:: showContextMenu(const QPoint& pos) {
     ui->mdiArea->addSubWindow(newTab);
     newTab->show();
     QTextEdit *newDebug = new QTextEdit();
-
     ui->tabWidget->addTab(newDebug,QString("CAM %1").arg(ui->mdiArea->subWindowList().size()));
     connect(newTab->rtpCli,SIGNAL(signal_ffmpeg_debug(QString,rtpClient*)),this,SLOT(slot_ffmpeg_debug(QString,rtpClient*)));
     map_textedit.insert(newTab->rtpCli,newDebug);

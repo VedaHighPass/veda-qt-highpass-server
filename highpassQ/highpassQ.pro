@@ -10,6 +10,7 @@ CONFIG += c++17
 
 SOURCES += \
     DatabaseManager.cpp \
+    carregister.cpp \
     httpserver.cpp \
     main.cpp \
     mainwindow.cpp \
@@ -19,6 +20,7 @@ SOURCES += \
 
 HEADERS += \
     DatabaseManager.h \
+    carregister.h \
     httpserver.h \
     mainwindow.h \
     rtpclient.h \
@@ -26,6 +28,7 @@ HEADERS += \
     videostream.h
 
 FORMS += \
+    carregister.ui \
     mainwindow.ui \
     stream_ui.ui \
     videostream.ui

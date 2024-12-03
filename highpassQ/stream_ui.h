@@ -13,22 +13,17 @@ class stream_ui : public QWidget
 
 public:
     explicit stream_ui(QWidget *parent = nullptr);
-    ~stream_ui();
+    ~stream_ui() override;
     rtpClient* rtpCli;
 
 private:
     Ui::stream_ui *ui;
     QString url;
 
-
+protected:
+    void resizeEvent(QResizeEvent *event) override;
 private slots:
     void on_startBtn_clicked();
-
-    void on_pauseBtn_clicked();
-
-    void on_restartBtn_clicked();
-
-    void on_quitBtn_clicked();
 
     void slot_streaming_start();
     void slot_video_start();
