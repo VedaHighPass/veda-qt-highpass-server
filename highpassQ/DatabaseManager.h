@@ -8,6 +8,12 @@
 #include <QDebug>
 #include <QFile>
 
+
+struct DatabaseResult {
+    QList<QVariantMap> records; // 조회된 레코드 리스트
+    int totalRecords = 0;       // 총 레코드 수
+};
+
 /**
  * @class DatabaseManager
  * @brief Singleton class to handle database operations using SQLite.
@@ -124,6 +130,14 @@ public:
      */
     bool insertExitStepBill(const QString& plateNumber, int exitGateID, int exitGateRecordID);
 
+    DatabaseResult getRecordsByFilters(
+        const QDate& startDate,
+        const QDate& endDate,
+        const QString& plateNumber,
+        const QList<int>& entryGates,
+        const QList<int>& exitGates,
+        int pageSize, int page
+        );
 private:
     QSqlDatabase db; /**< The database connection object. */
 
