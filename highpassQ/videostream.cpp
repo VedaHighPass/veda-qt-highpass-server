@@ -27,6 +27,23 @@ videoStream::videoStream(QWidget *parent) :
     connect(ui->tabWidget_2, &QTabWidget::customContextMenuRequested, this, &videoStream::showContextMenu);
 }
 
+
+videoStream::videoStream(QWidget *parent) :
+    QWidget(parent),
+    ui(new Ui::videoStream)
+{
+    ui->setupUi(this);
+    ui->widget_3->hide();
+    ui->tabWidget_2->setContextMenuPolicy(Qt::CustomContextMenu);
+    connect(this,SIGNAL(signal_clikQuit()),rtpClient::instance(),SLOT(slot_quitBtn()));
+    connect(rtpClient::instance(),SIGNAL(signal_ffmpeg_debug(QString)),this,SLOT(slot_ffmpeg_debug(QString)));
+    connect(rtpClient::instance(),SIGNAL(signal_streaming_start()),this,SLOT(slot_streaming_start()));
+    connect(rtpClient::instance(),SIGNAL(signal_video_start()),this,SLOT(slot_video_start()));
+    connect(this,SIGNAL(send_url(QString)),rtpClient::instance(),SLOT(recv_url(QString)));
+    connect(rtpClient::instance(),SIGNAL(signal_stream_fail()),this,SLOT(slot_streaming_fail()));
+    connect(ui->tabWidget_2, &QTabWidget::customContextMenuRequested, this, &videoStream::showContextMenu);
+}
+
 QString getCurrentFormattedTime() {
     // 현재 시간을 가져옵니다.
     QDateTime currentTime = QDateTime::currentDateTime();\
@@ -43,12 +60,35 @@ videoStream::~videoStream()
 
 void videoStream::slot_ffmpeg_debug(QString error,rtpClient* textedit_key)
 {
-   if(map_textedit.contains(textedit_key))
-   {
-       map_textedit[textedit_key]->append(error);
-   }
-   qDebug()<<error;
-   // ui->textEdit->append(error);
+    rtpClient::instance()->videoLabel = ui->video_label;
+    QString url = ui->lineEdit->text();
+    //emit send_url(url);
+    rtpClient::instance()->startFFmpegProcess(url);
+    qDebug() << "start ffmpeg";
+}
+
+
+void videoStream::on_pauseBtn_clicked()
+{
+
+}
+
+
+void videoStream::on_restartBtn_clicked()
+{
+
+}
+
+
+void videoStream::on_quitBtn_clicked()
+{
+    emit signal_clikQuit();
+    this->hide();
+}
+
+void videoStream::slot_ffmpeg_debug(QString error)
+{
+    ui->textEdit->append(error);
 }
 
 
@@ -110,14 +150,17 @@ void videoStream:: showContextMenu(const QPoint& pos) {
 
 }
 
+
+void videoStream:: showContextMenu(const QPoint& pos) {
+    QMenu menu(this);
+    QAction* addTabAction = menu.addAction("Add Tab");
+    connect(addTabAction, &QAction::triggered, this, &videoStream::addNewTab);
+    menu.exec(ui->tabWidget_2->mapToGlobal(pos));
+
+}
+
  void videoStream:: addNewTab() {
-    stream_ui* newTab = new stream_ui();
-    QString tabName = QString("CAM %1").arg(ui->tabWidget_2->count());
+    QWidget* newTab = new QWidget();
+    QString tabName = QString("Tab %1").arg(ui->tabWidget_2->count() + 1);
     ui->tabWidget_2->addTab(newTab, tabName);
-    QTextEdit *newDebug = new QTextEdit();
-    ui->tabWidget->addTab(newDebug,QString("CAM %1").arg(ui->tabWidget_2->count()-1));
-    connect(newTab->rtpCli,SIGNAL(signal_ffmpeg_debug(QString,rtpClient*)),this,SLOT(slot_ffmpeg_debug(QString,rtpClient*)));
-    map_textedit.insert(newTab->rtpCli,newDebug);
-     qDebug() << "Created new tab with stream_ui object at address: " << newTab;
-    //newTab->show();
 }
