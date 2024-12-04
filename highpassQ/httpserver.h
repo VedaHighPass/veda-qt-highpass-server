@@ -21,7 +21,7 @@ private:
     DatabaseManager& dbManager;
 
     void handleRequest(QTcpSocket* socket);
-    void sendResponse(QTcpSocket* socket, const QString& response, int statusCode = 200);
+    void sendResponse(QTcpSocket* socket, const QByteArray& body, int statusCode);
 };
 
 #endif // HTTPSERVER_H

@@ -54,7 +54,8 @@ void videoStream::slot_ffmpeg_debug(QString error,rtpClient* textedit_key)
 
 void videoStream::on_btnConnectDB_clicked()
 {
-    if (DatabaseManager::instance().connectToDatabase("/home/iam/veda_project/veda-qt-highpass-server/highpassQ/gotomars.db")) {
+    //if (DatabaseManager::instance().connectToDatabase("/home/iam/veda_project/veda-qt-highpass-server/highpassQ/gotomars.db")) {
+    if (DatabaseManager::instance().connectToDatabase("../highpassQ/gotomars.db")) {
         QMessageBox::information(this, "Success", "Connected to gotomars.db");
     } else {
         QMessageBox::critical(this, "Error", "Failed to connect to gotomars.db");
