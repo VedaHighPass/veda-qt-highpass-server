@@ -17,6 +17,37 @@ DatabaseManager::~DatabaseManager() {
     }
 }
 
+int DatabaseManager::addCamera(const QString& cameraName, const QString& rtspUrl) {
+    QSqlQuery query;
+    query.prepare(
+        "INSERT INTO \"CAMERA\" (\"Camera_Name\", \"Camera_RTSP_URL\") VALUES (:name, :rtspUrl)"
+    );
+    query.bindValue(":name", cameraName);   // TEXT 타입 컬럼에 안전하게 바인딩
+    query.bindValue(":rtspUrl", rtspUrl);  // TEXT 타입 컬럼에 안전하게 바인딩
+
+    if (query.exec()) {
+        return query.lastInsertId().toInt();  // 새 카메라 ID 반환
+    } else {
+        qDebug() << "Database error:" << query.lastError().text();  // 디버그 메시지 출력
+        return -1;  // 오류 발생 시 -1 반환
+    }
+}
+
+QList<QVariantMap> DatabaseManager::getAllCameras() {
+    QList<QVariantMap> cameras;
+    QSqlQuery query("SELECT * FROM CAMERA");
+
+    while (query.next()) {
+        QVariantMap camera;
+        camera["camera_ID"] = query.value("camera_ID").toInt();
+        camera["Camera_Name"] = query.value("Camera_Name").toString();
+        camera["Camera_RTSP_URL"] = query.value("Camera_RTSP_URL").toString();
+        cameras.append(camera);
+    }
+
+    return cameras;
+}
+
 bool DatabaseManager::connectToDatabase(const QString& dbName) {
     if (!QFile::exists(dbName)) {
         qDebug() << "Database file does not exist!";
