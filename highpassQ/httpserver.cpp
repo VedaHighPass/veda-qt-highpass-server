@@ -194,6 +194,7 @@ void HttpServer::handleRequest(QTcpSocket* socket) {
         }
     }  else if (method == "POST" && path == "/camera") {
         // 요청 본문에서 JSON 데이터 추출
+        qDebug() << "Received 원본:" << request;
         QString body = request.mid(request.indexOf("\r\n\r\n") + 4).trimmed(); // JSON 본문 추출
         qDebug() << "Received body:" << body;
 
