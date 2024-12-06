@@ -28,6 +28,8 @@ private slots:
     void on_btnSearchDB_clicked();
     void showContextMenu(const QPoint& pos);
     void addNewTab();
+    void on_btnUploadTest_clicked();
+
 private:
     Ui::videoStream *ui;
     QMap <rtpClient*,QTextEdit*> map_textedit;
