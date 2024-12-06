@@ -8,6 +8,7 @@
 #include <QFile>
 #include <QDir>
 #include <QByteArray>
+#include <QUrlQuery>
 #include <opencv2/opencv.hpp>
 #include <QDebug>
 #include <base64.h>
@@ -115,38 +116,116 @@ void HttpServer::handleRequest(QTcpSocket* socket) {
 
     qDebug() << "server ===== " << method <<"-----"<< path;
 
-    if (method == "GET" && path == "/records") {
-        QList<QVariantMap> records = DatabaseManager::instance().getAllRecords(); // 데이터 가져오기
-        QJsonArray jsonArray;
+    if (method == "GET" && path.startsWith("/records")) {
+        // http://127.0.0.1:8080/records?startDate=2024-11-13&endDate=2024-11-23&pageSize=10&page=1
+        QUrl url(path);
+        QUrlQuery queryParams(url.query());
 
-        for (const auto& record : records) {
+        // Query Parameters
+        QString startDateStr = queryParams.queryItemValue("startDate");
+        QString endDateStr = queryParams.queryItemValue("endDate");
+        QString plateNumber = queryParams.queryItemValue("plateNumber");
+        QString entryGateStr = queryParams.queryItemValue("entryGate");
+        QString exitGateStr = queryParams.queryItemValue("exitGate");
+        int pageSize = queryParams.queryItemValue("pageSize").toInt();
+        int page = queryParams.queryItemValue("page").toInt();
+
+        // Validate Dates
+        QDate startDate = QDate::fromString(startDateStr, "yyyy-MM-dd");
+        QDate endDate = QDate::fromString(endDateStr, "yyyy-MM-dd");
+
+        if (!startDate.isValid() || !endDate.isValid()) {
+            sendResponse(socket, "Invalid date format. Use yyyy-MM-dd.", 400);
+            return;
+        }
+
+        // Parse entryGate and exitGate as lists of integers
+        QStringList entryGateList = entryGateStr.split(",", Qt::SkipEmptyParts);
+        QList<int> entryGates;
+        for (const QString& gate : entryGateList) {
+            bool ok;
+            int gateNumber = gate.toInt(&ok);
+            if (ok) {
+                entryGates.append(gateNumber);
+            }
+        }
+
+        QStringList exitGateList = exitGateStr.split(",", Qt::SkipEmptyParts);
+        QList<int> exitGates;
+        for (const QString& gate : exitGateList) {
+            bool ok;
+            int gateNumber = gate.toInt(&ok);
+            if (ok) {
+                exitGates.append(gateNumber);
+            }
+        }
+
+        // Fetch records using the updated DatabaseResult structure
+        DatabaseResult result = DatabaseManager::instance().getRecordsByFilters(
+            startDate, endDate, plateNumber, entryGates, exitGates, pageSize, page
+            );
+
+        // JSON 변환 및 응답 생성
+        QJsonArray jsonArray;
+        for (const auto& record : result.records) {
             QJsonObject jsonObject;
-            jsonObject["ID"] = record["ID"].toInt();
-            jsonObject["EntryTime"] = record["EntryTime"].toString();
-            jsonObject["PlateNumber"] = record["PlateNumber"].toString();
-            jsonObject["GateNumber"] = record["GateNumber"].toInt();
+            for (const auto& key : record.keys()) {
+                jsonObject[key] = QJsonValue::fromVariant(record[key]);
+            }
             jsonArray.append(jsonObject);
         }
 
-        QJsonDocument jsonDoc(jsonArray);
-        sendResponse(socket, jsonDoc.toJson(), 200);
-    } else if (method == "GET" && path == "/gates") {
-        // GATELIST 테이블에서 데이터 가져오기
-        QList<QVariantMap> gates = DatabaseManager::instance().getAllGates(); // GATELIST 데이터 가져오기
-        QJsonArray jsonArray;
+        // 전체 레코드 수와 데이터를 포함한 응답 생성
+        QJsonObject response;
+        response["data"] = jsonArray;
+        response["totalRecords"] = result.totalRecords;
 
-        for (const auto& gate : gates) {
-            QJsonObject jsonObject;
-            jsonObject["GateNumber"] = gate["GateNumber"].toInt();
-            jsonObject["GateName"] = gate["GateName"].toString();
-            jsonObject["isEnterGate"] = gate["isEnterGate"].toBool();
-            jsonObject["isExitGate"] = gate["isExitGate"].toBool();
-            jsonArray.append(jsonObject);
+        QJsonDocument jsonDoc(response);
+        sendResponse(socket, jsonDoc.toJson(), 200);
+    } else if (method == "GET" && path.startsWith("/images/")){
+        // 요청된 경로를 실제 파일 시스템 경로로 변환
+        QString filePath = QString("C:/Users/3kati/Desktop/db_qt/images") + path.mid(7); // "/images/" 이후 경로 추가
+        QFile file(filePath);
+
+        // 파일 존재 여부 확인
+        if (!file.exists()) {
+            sendResponse(socket, "Image not found", 404);
+            return;
         }
 
-        QJsonDocument jsonDoc(jsonArray);
+        // 파일 열기
+        if (!file.open(QIODevice::ReadOnly)) {
+            sendResponse(socket, "Failed to open image", 500);
+            return;
+        }
+
+        QByteArray imageData = file.readAll();
+        file.close();
+
+        // 이미지 데이터를 반환
+        QByteArray httpResponse = QString("HTTP/1.1 200 OK\r\n"
+                                          "Content-Type: image/jpeg\r\n"
+                                          "Content-Length: %1\r\n\r\n")
+                                      .arg(imageData.size())
+                                      .toUtf8();
+        httpResponse.append(imageData);
+        socket->write(httpResponse);
+        socket->flush();
+        socket->disconnectFromHost();
+        return;
+    } else if (method == "GET" && path.startsWith("/gatefees")) {
+        QSqlQuery query("SELECT GateNumber, GateFee FROM GATELIST");
+
+        QJsonObject response;
+        while (query.next()) {
+            int gateNumber = query.value("GateNumber").toInt();
+            int gateFee = query.value("GateFee").toInt();
+            response[QString::number(gateNumber)] = gateFee;
+        }
+
+        QJsonDocument jsonDoc(response);
         sendResponse(socket, jsonDoc.toJson(), 200);
-    } else if (method == "POST" && path == "/records") {
+    }else if (method == "POST" && path == "/records") {
         QString body = request.split("\r\n\r\n").last();
         QJsonDocument jsonDoc = QJsonDocument::fromJson(body.toUtf8());
         QJsonObject jsonObject = jsonDoc.object();
