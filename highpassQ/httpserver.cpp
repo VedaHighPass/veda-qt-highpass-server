@@ -8,6 +8,7 @@
 #include <QFile>
 #include <QDir>
 #include <QByteArray>
+#include <QUrlQuery>
 
 HttpServer::HttpServer(DatabaseManager& dbManager, QObject* parent)
     : QTcpServer(parent), dbManager(dbManager) {}
