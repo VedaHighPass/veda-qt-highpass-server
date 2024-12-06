@@ -137,6 +137,18 @@ void HttpServer::handleRequest(QTcpSocket* socket) {
         socket->flush();
         socket->disconnectFromHost();
         return;
+    } else if (method == "GET" && path.startsWith("/gatefees")) {
+        QSqlQuery query("SELECT GateNumber, GateFee FROM GATELIST");
+
+        QJsonObject response;
+        while (query.next()) {
+            int gateNumber = query.value("GateNumber").toInt();
+            int gateFee = query.value("GateFee").toInt();
+            response[QString::number(gateNumber)] = gateFee;
+        }
+
+        QJsonDocument jsonDoc(response);
+        sendResponse(socket, jsonDoc.toJson(), 200);
     }
 /*
     else if (method == "POST" && path == "/records") {

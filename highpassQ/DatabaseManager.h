@@ -138,6 +138,7 @@ public:
         const QList<int>& exitGates,
         int pageSize, int page
         );
+
 private:
     QSqlDatabase db; /**< The database connection object. */
 

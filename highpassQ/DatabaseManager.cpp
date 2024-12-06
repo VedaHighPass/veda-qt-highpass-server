@@ -188,12 +188,16 @@ DatabaseResult DatabaseManager::getRecordsByFilters(
     ) {
     DatabaseResult result;
 
-    // Build the base SQL query
-    QString baseQuery = "FROM HIGHPASS_RECORD WHERE DATE(EntryTime) BETWEEN :startDate AND :endDate";
+    // Base SQL query with JOIN to include Email
+    QString baseQuery = R"(
+        FROM HIGHPASS_RECORD hr
+        LEFT JOIN EMAILS e ON hr.PlateNumber = e.PlateNumber
+        WHERE DATE(hr.EntryTime) BETWEEN :startDate AND :endDate
+    )";
 
     // Add plate number condition
     if (!plateNumber.isEmpty()) {
-        baseQuery += " AND PlateNumber = :plateNumber";
+        baseQuery += " AND hr.PlateNumber = :plateNumber";
     }
 
     // Add entry gates condition
@@ -202,7 +206,7 @@ DatabaseResult DatabaseManager::getRecordsByFilters(
         for (int i = 0; i < entryGates.size(); ++i) {
             entryPlaceholders.append(QString(":entryGate%1").arg(i));
         }
-        baseQuery += QString(" AND EntryGateNumber IN (%1)").arg(entryPlaceholders.join(","));
+        baseQuery += QString(" AND hr.EntryGateNumber IN (%1)").arg(entryPlaceholders.join(","));
     }
 
     // Add exit gates condition
@@ -211,7 +215,7 @@ DatabaseResult DatabaseManager::getRecordsByFilters(
         for (int i = 0; i < exitGates.size(); ++i) {
             exitPlaceholders.append(QString(":exitGate%1").arg(i));
         }
-        baseQuery += QString(" AND ExitGateNumber IN (%1)").arg(exitPlaceholders.join(","));
+        baseQuery += QString(" AND hr.ExitGateNumber IN (%1)").arg(exitPlaceholders.join(","));
     }
 
     // Query to calculate total record count
@@ -240,7 +244,10 @@ DatabaseResult DatabaseManager::getRecordsByFilters(
     }
 
     // Query to fetch paginated records
-    QString dataQueryStr = "SELECT * " + baseQuery + " LIMIT :limit OFFSET :offset";
+    QString dataQueryStr = R"(
+        SELECT hr.*, e.Email
+    )" + baseQuery + " LIMIT :limit OFFSET :offset";
+
     QSqlQuery dataQuery;
     dataQuery.prepare(dataQueryStr);
     dataQuery.bindValue(":startDate", startDate.toString("yyyy-MM-dd"));
@@ -274,6 +281,8 @@ DatabaseResult DatabaseManager::getRecordsByFilters(
         record["EntryGateNumber"] = dataQuery.value("EntryGateNumber").toInt();
         record["ExitTime"] = dataQuery.value("ExitTime").toString();
         record["ExitGateNumber"] = dataQuery.value("ExitGateNumber").toInt();
+        record["Path"] = dataQuery.value("Path").toString();
+        record["Email"] = dataQuery.value("Email").toString();  // Add email
         result.records.append(record);
     }
 
