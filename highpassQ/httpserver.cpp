@@ -9,6 +9,9 @@
 #include <QDir>
 #include <QByteArray>
 #include <QUrlQuery>
+#include <opencv2/opencv.hpp>
+#include <QDebug>
+#include <base64.h>
 
 HttpServer::HttpServer(DatabaseManager& dbManager, QObject* parent)
     : QTcpServer(parent), dbManager(dbManager) {}
@@ -20,6 +23,35 @@ void HttpServer::startServer(quint16 port) {
         qDebug() << "Server started on port" << port;
     }
 }
+
+// Function to decode the Base64 string and save it as a .jpg file
+void decodeBase64AndSaveToFile(const std::string& encoded, const std::string& filename) {
+    // Decode the Base64 string into raw byte data
+    std::string decodedData = base64_decode(encoded, true); // Remove line breaks if present
+
+    // Convert the decoded string to a std::vector<uchar> (byte buffer)
+    std::vector<uchar> decodedVec(decodedData.begin(), decodedData.end());
+
+    // Create an InputArray from the decoded byte buffer
+    cv::InputArray inputArray(decodedVec);
+
+    // Decode the byte buffer into a cv::Mat image
+    cv::Mat img = cv::imdecode(inputArray, cv::IMREAD_COLOR); // Use IMREAD_COLOR to load a color image
+
+    // Check if the decoding was successful
+    if (img.empty()) {
+        std::cerr << "Failed to decode Base64 to image." << std::endl;
+        return;
+    }
+
+    // Save the decoded image to a file (e.g., "output.jpg")
+    if (cv::imwrite(filename, img)) {
+        std::cout << "Image saved successfully to " << filename << std::endl;
+    } else {
+        std::cerr << "Failed to save image to file." << std::endl;
+    }
+}
+
 
 void HttpServer::incomingConnection(qintptr socketDescriptor) {
     QTcpSocket* socket = new QTcpSocket();
@@ -81,6 +113,8 @@ void HttpServer::handleRequest(QTcpSocket* socket) {
     QString method, path;
     QTextStream stream(&request);
     stream >> method >> path;
+
+    qDebug() << "server ===== " << method <<"-----"<< path;
 
     if (method == "GET" && path.startsWith("/records")) {
         // http://127.0.0.1:8080/records?startDate=2024-11-13&endDate=2024-11-23&pageSize=10&page=1
@@ -216,61 +250,49 @@ void HttpServer::handleRequest(QTcpSocket* socket) {
             sendResponse(socket, "Failed to add record", 500);
         }
     } else if (method == "POST" && path == "/upload") {
-        // Content-Type 헤더에서 boundary 추출
-        QString contentType = request.section("Content-Type: ", 1).section("\r\n", 0, 0).trimmed();
-        if (!contentType.startsWith("multipart/form-data;")) {
-            sendResponse(socket, "Invalid Content-Type", 400);
-            return;
+        qDebug() << "server upload start";
+        QString body = request.split("\r\n\r\n").last();
+        //qDebug() << "body: " << body;
+
+        QJsonDocument jsonDoc = QJsonDocument::fromJson(body.toUtf8());
+        QJsonObject jsonObject = jsonDoc.object();
+
+        // JSON에서 데이터 추출
+        int gateNumber = jsonObject.value("GateNum").toInt();
+        QString plateNumber = jsonObject.value("PlateNum").toString();
+        QString time = jsonObject.value("time").toString();
+        QString imageRawString = jsonObject.value("imageRaw").toString();
+        int imageWidth = jsonObject.value("imageWidth").toInt();
+        int imageHeight = jsonObject.value("imageHeight").toInt();
+
+        qDebug() << "imageWidth: " << imageWidth;
+        qDebug() << "imageHeight: " << imageHeight;
+        qDebug() << "plateNumber: " << plateNumber;
+
+        // Raw 데이터를 QByteArray로 변환
+    //    QByteArray imageRawData = imageRawString.toUtf8();
+
+        // cv::Mat로 복원
+    //    cv::Mat rawImage(imageHeight, imageWidth, CV_8UC3, reinterpret_cast<void*>(imageRawData.data()));
+
+
+        qDebug() << "test-1";
+
+        // Create directory "AAA" if it doesn't exist
+        QDir dir(plateNumber);
+        if (!dir.exists()) {
+            dir.mkpath(".");
         }
 
-        QString boundary = "--" + contentType.section("boundary=", 1).trimmed();
-        if (boundary.isEmpty()) {
-            sendResponse(socket, "Boundary not found", 400);
-            return;
-        }
+        // Generate filename: "YYYYMMDD_ttmm.jpg"
+        QString date = QDate::currentDate().toString("yyyyMMdd");
+        QString timePart = QTime::currentTime().toString("hhmm");
+        QString fileName = QString("%1/%2_%3.jpg").arg(plateNumber).arg(date).arg(timePart);
 
-        qDebug() << "===== requestData ===== \n"<<requestData;
-        // 본문 데이터 추출
-        QByteArray bodyData = customSplit(requestData, "\r\n\r\n").last();
-        //qDebug() << "===== body ===== \n"<<bodyData;
+        decodeBase64AndSaveToFile(imageRawString.toStdString(), fileName.toStdString());
 
-        QList<QByteArray> parts = customSplit(bodyData, boundary.toUtf8());
-        //for( const QByteArray& part : parts){
-        //    qDebug() << "===== part ===== \n"<< part;
-        //}
-
-        bool fileSaved = false;
-        for (const QByteArray& part : parts) {
-            if (part.contains("Content-Disposition: form-data;") && part.contains("filename=")) {
-                // 파일 데이터 추출
-                int dataIndex = part.indexOf("\r\n\r\n") + 4;
-                QByteArray fileData = part.mid(dataIndex).trimmed();
-
-                // 파일 이름 추출
-                QString contentDisposition = QString::fromUtf8(part);
-                QString fileName = contentDisposition.section("filename=", 1).section("\"", 1, 1);
-                if (fileName.isEmpty()) fileName = "uploaded_file"; // 기본 이름 설정
-
-                // 파일 저장
-                QString filePath = QDir::currentPath() + "/uploads/" + fileName;
-                QDir dir("uploads");
-                if (!dir.exists()) dir.mkpath(".");
-
-                QFile file(filePath);
-                if (file.open(QIODevice::WriteOnly)) {
-                    file.write(fileData);
-                    file.close();
-                    fileSaved = true;
-                    sendResponse(socket, "File uploaded successfully", 200);
-                } else {
-                    sendResponse(socket, "Failed to save file", 500);
-                }
-            }
-        }
-
-        if (!fileSaved) {
-            sendResponse(socket, "No file found in the request", 400);
-        }
+        sendResponse(socket, "Upload successful", 200);
+        qDebug() << "Upload Successful";
     }  else if (method == "POST" && path == "/camera") {
         // 요청 본문에서 JSON 데이터 추출
         qDebug() << "Received 원본:" << request;
