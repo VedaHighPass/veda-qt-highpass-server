@@ -22,6 +22,7 @@ private:
 
     void handleRequest(QTcpSocket* socket);
     void sendResponse(QTcpSocket* socket, const QByteArray& body, int statusCode);
+    void decodeBase64AndSaveToFile(const std::string& encoded, const std::string& filename);
 };
 
 #endif // HTTPSERVER_H

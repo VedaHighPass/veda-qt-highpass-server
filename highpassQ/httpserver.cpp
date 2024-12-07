@@ -24,35 +24,6 @@ void HttpServer::startServer(quint16 port) {
     }
 }
 
-// Function to decode the Base64 string and save it as a .jpg file
-void decodeBase64AndSaveToFile(const std::string& encoded, const std::string& filename) {
-    // Decode the Base64 string into raw byte data
-    std::string decodedData = base64_decode(encoded, true); // Remove line breaks if present
-
-    // Convert the decoded string to a std::vector<uchar> (byte buffer)
-    std::vector<uchar> decodedVec(decodedData.begin(), decodedData.end());
-
-    // Create an InputArray from the decoded byte buffer
-    cv::InputArray inputArray(decodedVec);
-
-    // Decode the byte buffer into a cv::Mat image
-    cv::Mat img = cv::imdecode(inputArray, cv::IMREAD_COLOR); // Use IMREAD_COLOR to load a color image
-
-    // Check if the decoding was successful
-    if (img.empty()) {
-        std::cerr << "Failed to decode Base64 to image." << std::endl;
-        return;
-    }
-
-    // Save the decoded image to a file (e.g., "output.jpg")
-    if (cv::imwrite(filename, img)) {
-        std::cout << "Image saved successfully to " << filename << std::endl;
-    } else {
-        std::cerr << "Failed to save image to file." << std::endl;
-    }
-}
-
-
 void HttpServer::incomingConnection(qintptr socketDescriptor) {
     QTcpSocket* socket = new QTcpSocket();
     if (!socket->setSocketDescriptor(socketDescriptor)) {
@@ -88,23 +59,6 @@ QList<QVariantMap> convertToQVariantMapList(const QStringList& stringList) {
     return result;
 }
 
-QList<QByteArray> customSplit(const QByteArray& input, const QByteArray& delimiter) {
-    QList<QByteArray> result;
-    int startIndex = 0;
-
-    while (true) {
-        int delimiterIndex = input.indexOf(delimiter, startIndex);
-        if (delimiterIndex == -1) {
-            result.append(input.mid(startIndex)); // Add the remaining part
-            break;
-        }
-        result.append(input.mid(startIndex, delimiterIndex - startIndex));
-        startIndex = delimiterIndex + delimiter.size();
-    }
-
-    return result;
-}
-
 void HttpServer::handleRequest(QTcpSocket* socket) {
     QByteArray requestData = socket->readAll();
     QString request = QString::fromUtf8(requestData);
@@ -113,8 +67,6 @@ void HttpServer::handleRequest(QTcpSocket* socket) {
     QString method, path;
     QTextStream stream(&request);
     stream >> method >> path;
-
-    qDebug() << "server ===== " << method <<"-----"<< path;
 
     if (method == "GET" && path.startsWith("/records")) {
         // http://127.0.0.1:8080/records?startDate=2024-11-13&endDate=2024-11-23&pageSize=10&page=1
@@ -225,7 +177,7 @@ void HttpServer::handleRequest(QTcpSocket* socket) {
 
         QJsonDocument jsonDoc(response);
         sendResponse(socket, jsonDoc.toJson(), 200);
-    }else if (method == "POST" && path == "/records") {
+    } else if (method == "POST" && path == "/records") {
         QString body = request.split("\r\n\r\n").last();
         QJsonDocument jsonDoc = QJsonDocument::fromJson(body.toUtf8());
         QJsonObject jsonObject = jsonDoc.object();
@@ -269,16 +221,8 @@ void HttpServer::handleRequest(QTcpSocket* socket) {
         qDebug() << "imageHeight: " << imageHeight;
         qDebug() << "plateNumber: " << plateNumber;
 
-        // Raw 데이터를 QByteArray로 변환
-    //    QByteArray imageRawData = imageRawString.toUtf8();
 
-        // cv::Mat로 복원
-    //    cv::Mat rawImage(imageHeight, imageWidth, CV_8UC3, reinterpret_cast<void*>(imageRawData.data()));
-
-
-        qDebug() << "test-1";
-
-        // Create directory "AAA" if it doesn't exist
+        // Create directory [PlateNumber] if it doesn't exist
         QDir dir(plateNumber);
         if (!dir.exists()) {
             dir.mkpath(".");
@@ -293,7 +237,7 @@ void HttpServer::handleRequest(QTcpSocket* socket) {
 
         sendResponse(socket, "Upload successful", 200);
         qDebug() << "Upload Successful";
-    }  else if (method == "POST" && path == "/camera") {
+    } else if (method == "POST" && path == "/camera") {
         // 요청 본문에서 JSON 데이터 추출
         qDebug() << "Received 원본:" << request;
         QString body = request.mid(request.indexOf("\r\n\r\n") + 4).trimmed(); // JSON 본문 추출
@@ -370,4 +314,24 @@ void HttpServer::sendResponse(QTcpSocket* socket, const QByteArray& body, int st
     socket->write(responseHeaders);
     socket->write(body);
     socket->flush();
+}
+
+// Function to decode the Base64 string and save it as a .jpg file
+void HttpServer::decodeBase64AndSaveToFile(const std::string& encoded, const std::string& filename) {
+    std::string decodedData = base64_decode(encoded, true);
+    std::vector<uchar> decodedVec(decodedData.begin(), decodedData.end());
+    cv::InputArray inputArray(decodedVec);
+
+    // Decode the byte buffer into a cv::Mat image
+    cv::Mat img = cv::imdecode(inputArray, cv::IMREAD_COLOR);
+    if (img.empty()) {
+        std::cerr << "Failed to decode Base64 to image." << std::endl;
+        return;
+    }
+
+    if (cv::imwrite(filename, img)) {
+        std::cout << "Image saved successfully to " << filename << std::endl;
+    } else {
+        std::cerr << "Failed to save image to file." << std::endl;
+    }
 }
