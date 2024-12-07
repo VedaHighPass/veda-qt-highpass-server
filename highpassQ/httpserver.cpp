@@ -279,7 +279,7 @@ void HttpServer::handleRequest(QTcpSocket* socket) {
         qDebug() << "test-1";
 
         // Create directory "AAA" if it doesn't exist
-        QDir dir("AAA");
+        QDir dir(plateNumber);
         if (!dir.exists()) {
             dir.mkpath(".");
         }
@@ -287,7 +287,7 @@ void HttpServer::handleRequest(QTcpSocket* socket) {
         // Generate filename: "YYYYMMDD_ttmm.jpg"
         QString date = QDate::currentDate().toString("yyyyMMdd");
         QString timePart = QTime::currentTime().toString("hhmm");
-        QString fileName = QString("AAA/%1_%2.jpg").arg(date).arg(timePart);
+        QString fileName = QString("%1/%2_%3.jpg").arg(plateNumber).arg(date).arg(timePart);
 
         decodeBase64AndSaveToFile(imageRawString.toStdString(), fileName.toStdString());
 
