@@ -13,8 +13,11 @@ LIBS += -L/usr/lib \
         -lopencv_core \
         -lopencv_imgcodecs \
         -lopencv_highgui \
-        -lopencv_videoio
-        -lcurl
+        -lopencv_videoio \
+        -lcurl \
+        -L/usr/lib/aarch64-linux-gnu \
+        -lcrypto \
+        -lssl
 
 SOURCES += \
     DatabaseManager.cpp \

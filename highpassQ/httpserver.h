@@ -6,6 +6,9 @@
 #include <QJsonDocument>
 #include <QJsonObject>
 #include "DatabaseManager.h"
+#include <QSslSocket>
+#include <QSslKey>
+#include <QSslCertificate>
 
 class HttpServer : public QTcpServer {
     Q_OBJECT
@@ -20,9 +23,14 @@ protected:
 private:
     DatabaseManager& dbManager;
 
-    void handleRequest(QTcpSocket* socket);
-    void sendResponse(QTcpSocket* socket, const QByteArray& body, int statusCode);
+    void handleRequest(QSslSocket* socket);
+    void sendResponse(QSslSocket* socket, const QByteArray& body, int statusCode);
     void decodeBase64AndSaveToFile(const std::string& encoded, const std::string& filename);
+private slots:
+    void onEncrypted() {
+            qDebug() << "SSL connection established!";
+    }
+    void onReadyRead();
 };
 
 #endif // HTTPSERVER_H
