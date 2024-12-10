@@ -320,3 +320,17 @@ DatabaseResult DatabaseManager::getRecordsByFilters(
 
     return result;
 }
+
+bool DatabaseManager::addOrUpdateEmail(const QString& plateNumber, const QString& email) {
+    QSqlQuery query;
+    query.prepare("INSERT INTO Emails (PlateNumber, Email) VALUES (:plateNumber, :email) "
+                  "ON CONFLICT(PlateNumber) DO UPDATE SET Email = :email;");
+    query.bindValue(":plateNumber", plateNumber);
+    query.bindValue(":email", email);
+
+    if (!query.exec()) {
+        qDebug() << "Failed to update email:" << query.lastError().text();
+        return false;
+    }
+    return true;
+}

@@ -323,7 +323,35 @@ void HttpServer::handleRequest(QTcpSocket* socket) {
 
         QJsonDocument jsonDoc(jsonArray);
         sendResponse(socket, jsonDoc.toJson(), 200);
+    } else if (method == "POST" && path == "/emails") {
+    // 요청 본문에서 JSON 데이터 추출
+    QString body = request.mid(request.indexOf("\r\n\r\n") + 4).trimmed(); // JSON 본문 추출
+    QJsonDocument jsonDoc = QJsonDocument::fromJson(body.toUtf8());
+
+    if (jsonDoc.isNull() || !jsonDoc.isObject()) {
+        sendResponse(socket, "Invalid JSON format", 400);
+        return;
+    }
+
+    QJsonObject jsonObject = jsonDoc.object();
+    QString plateNumber = jsonObject.value("PlateNumber").toString();
+    QString email = jsonObject.value("Email").toString();
+
+    // 유효성 검사
+    if (plateNumber.isEmpty() || email.isEmpty()) {
+        sendResponse(socket, "Missing PlateNumber or Email", 400);
+        return;
+    }
+
+    // Emails 테이블에 데이터 추가 또는 업데이트
+    bool success = DatabaseManager::instance().addOrUpdateEmail(plateNumber, email);
+    if (success) {
+        sendResponse(socket, "Email information updated successfully", 200);
     } else {
+        sendResponse(socket, "Failed to update email information", 500);
+    }
+}
+    else {
         sendResponse(socket, "Not Found", 404);
     }
 }

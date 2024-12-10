@@ -57,6 +57,7 @@ public:
         const QList<int>& exitGates,
         int pageSize, int page
         );
+    bool addOrUpdateEmail(const QString& plateNumber, const QString& email);
 private:
     QSqlDatabase db; /**< The database connection object. */
 
