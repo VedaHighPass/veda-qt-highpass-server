@@ -334,3 +334,89 @@ bool DatabaseManager::addOrUpdateEmail(const QString& plateNumber, const QString
     }
     return true;
 }
+
+bool DatabaseManager::processHighPassRecord(const QString& plateNumber, int gateNumber, const QString& currentTime) {
+    QSqlQuery query;
+    db.transaction(); // 트랜잭션 시작
+
+    // 1. PlateNumber로 기존 기록 확인
+    query.prepare("SELECT ID, EntryGateNumber, ExitGateNumber, Path FROM HIGHPASS_RECORD WHERE PlateNumber = :plateNumber");
+    query.bindValue(":plateNumber", plateNumber);
+
+    if (!query.exec()) {
+        qDebug() << "Error fetching record for PlateNumber:" << query.lastError().text();
+        db.rollback();
+        return false;
+    }
+
+    if (query.next()) {
+        int recordId = query.value("ID").toInt();
+        int entryGateNumber = query.value("EntryGateNumber").toInt();
+        int exitGateNumber = query.value("ExitGateNumber").isNull() ? -1 : query.value("ExitGateNumber").toInt();
+        QString path = query.value("Path").toString();
+
+        if (exitGateNumber == -1) {
+            // 2. ExitGateNumber가 없으면 EntryGateNumber와 새 GateNumber로 Path 설정
+            if (path.isEmpty()) {
+                path = QString::number(entryGateNumber);
+            }
+            path += QString(",%1").arg(gateNumber);
+
+            QSqlQuery updateQuery;
+            updateQuery.prepare(R"(
+                UPDATE HIGHPASS_RECORD
+                SET ExitTime = :exitTime, ExitGateNumber = :exitGateNumber, Path = :path
+                WHERE ID = :id
+            )");
+            updateQuery.bindValue(":exitTime", currentTime);
+            updateQuery.bindValue(":exitGateNumber", gateNumber);
+            updateQuery.bindValue(":path", path);
+            updateQuery.bindValue(":id", recordId);
+
+            if (!updateQuery.exec()) {
+                qDebug() << "Error updating record:" << updateQuery.lastError().text();
+                db.rollback();
+                return false;
+            }
+        } else {
+            // 3. ExitGateNumber가 있으면 새 Gate 추가 및 Path 갱신
+            path += QString(",%1").arg(gateNumber);
+            QSqlQuery updateQuery;
+            updateQuery.prepare(R"(
+                UPDATE HIGHPASS_RECORD
+                SET ExitGateNumber = :exitGateNumber, Path = :path
+                WHERE ID = :id
+            )");
+            updateQuery.bindValue(":exitGateNumber", gateNumber);
+            updateQuery.bindValue(":path", path);
+            updateQuery.bindValue(":id", recordId);
+
+            if (!updateQuery.exec()) {
+                qDebug() << "Error updating record with new gate:" << updateQuery.lastError().text();
+                db.rollback();
+                return false;
+            }
+        }
+    } else {
+        // 4. PlateNumber가 존재하지 않으면 새 레코드 추가
+        QSqlQuery insertQuery;
+        insertQuery.prepare(R"(
+            INSERT INTO HIGHPASS_RECORD (PlateNumber, EntryTime, EntryGateNumber, ExitTime, ExitGateNumber, Path)
+            VALUES (:plateNumber, :entryTime, :entryGateNumber, NULL, NULL, :path)
+        )");
+        insertQuery.bindValue(":plateNumber", plateNumber);
+        insertQuery.bindValue(":entryTime", currentTime);
+        insertQuery.bindValue(":entryGateNumber", gateNumber);
+        insertQuery.bindValue(":path", QString::number(gateNumber));
+
+        if (!insertQuery.exec()) {
+            qDebug() << "Error inserting new record:" << insertQuery.lastError().text();
+            db.rollback();
+            return false;
+        }
+    }
+
+    db.commit(); // 트랜잭션 커밋
+    return true;
+}
+

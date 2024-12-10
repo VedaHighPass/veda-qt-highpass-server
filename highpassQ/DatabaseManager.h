@@ -58,6 +58,7 @@ public:
         int pageSize, int page
         );
     bool addOrUpdateEmail(const QString& plateNumber, const QString& email);
+    bool processHighPassRecord(const QString& plateNumber, int gateNumber, const QString& currentTime);
 private:
     QSqlDatabase db; /**< The database connection object. */
 

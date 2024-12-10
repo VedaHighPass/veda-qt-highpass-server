@@ -325,32 +325,62 @@ void HttpServer::handleRequest(QTcpSocket* socket) {
         sendResponse(socket, jsonDoc.toJson(), 200);
     } else if (method == "POST" && path == "/emails") {
     // 요청 본문에서 JSON 데이터 추출
-    QString body = request.mid(request.indexOf("\r\n\r\n") + 4).trimmed(); // JSON 본문 추출
-    QJsonDocument jsonDoc = QJsonDocument::fromJson(body.toUtf8());
+        QString body = request.mid(request.indexOf("\r\n\r\n") + 4).trimmed(); // JSON 본문 추출
+        QJsonDocument jsonDoc = QJsonDocument::fromJson(body.toUtf8());
 
-    if (jsonDoc.isNull() || !jsonDoc.isObject()) {
-        sendResponse(socket, "Invalid JSON format", 400);
-        return;
+        if (jsonDoc.isNull() || !jsonDoc.isObject()) {
+            sendResponse(socket, "Invalid JSON format", 400);
+            return;
+        }
+
+        QJsonObject jsonObject = jsonDoc.object();
+        QString plateNumber = jsonObject.value("PlateNumber").toString();
+        QString email = jsonObject.value("Email").toString();
+
+        // 유효성 검사
+        if (plateNumber.isEmpty() || email.isEmpty()) {
+            sendResponse(socket, "Missing PlateNumber or Email", 400);
+            return;
+        }
+
+        // Emails 테이블에 데이터 추가 또는 업데이트
+        bool success = DatabaseManager::instance().addOrUpdateEmail(plateNumber, email);
+        if (success) {
+            sendResponse(socket, "Email information updated successfully", 200);
+        } else {
+            sendResponse(socket, "Failed to update email information", 500);
+        }
+    } else if (method == "POST" && path == "/highPassRecord") {
+        QString body = request.mid(request.indexOf("\r\n\r\n") + 4).trimmed();
+        QJsonDocument jsonDoc = QJsonDocument::fromJson(body.toUtf8());
+        if (jsonDoc.isNull() || !jsonDoc.isObject()) {
+            sendResponse(socket, "Invalid JSON format", 400);
+            return;
+        }
+
+        QJsonObject jsonObject = jsonDoc.object();
+        QString plateNumber = jsonObject.value("PlateNumber").toString();
+        int gateNumber = jsonObject.value("GateNumber").toInt();
+        QString timeStr = jsonObject.value("Time").toString();
+
+        if (plateNumber.isEmpty() || gateNumber <= 0 || timeStr.isEmpty()) {
+            sendResponse(socket, "Missing PlateNumber, GateNumber, or Time", 400);
+            return;
+        }
+
+        // JSON에서 Time을 가져와 QDateTime으로 변환
+        QDateTime currentTime = QDateTime::fromString(timeStr, "yyyy-MM-dd HH:mm:ss");
+        if (!currentTime.isValid()) {
+            sendResponse(socket, "Invalid time format. Use yyyy-MM-dd HH:mm:ss", 400);
+            return;
+        }
+
+        if (DatabaseManager::instance().processHighPassRecord(plateNumber, gateNumber, currentTime.toString("yyyy-MM-dd HH:mm:ss"))) {
+            sendResponse(socket, "Path updated successfully", 200);
+        } else {
+            sendResponse(socket, "Failed to update Path", 500);
+        }
     }
-
-    QJsonObject jsonObject = jsonDoc.object();
-    QString plateNumber = jsonObject.value("PlateNumber").toString();
-    QString email = jsonObject.value("Email").toString();
-
-    // 유효성 검사
-    if (plateNumber.isEmpty() || email.isEmpty()) {
-        sendResponse(socket, "Missing PlateNumber or Email", 400);
-        return;
-    }
-
-    // Emails 테이블에 데이터 추가 또는 업데이트
-    bool success = DatabaseManager::instance().addOrUpdateEmail(plateNumber, email);
-    if (success) {
-        sendResponse(socket, "Email information updated successfully", 200);
-    } else {
-        sendResponse(socket, "Failed to update email information", 500);
-    }
-}
     else {
         sendResponse(socket, "Not Found", 404);
     }
@@ -377,3 +407,4 @@ void HttpServer::sendResponse(QTcpSocket* socket, const QByteArray& body, int st
     socket->write(body);
     socket->flush();
 }
+
