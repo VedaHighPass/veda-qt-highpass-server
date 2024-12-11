@@ -19,21 +19,18 @@ void rtpClient::readFFmpegOutput() {
         qDebug() << "No data from ffmpeg. Check the process and arguments.";
     }
     // 데이터의 크기 확인
-   // qDebug() << "Received data size:" << data.size();
+    // qDebug() << "Received data size:" << data.size();
     buffer.append(data);
-  //  qDebug() << "Received buffer size:" << buffer.size();
+    //  qDebug() << "Received buffer size:" << buffer.size();
     // raw RGB 데이터로 가정하고 QImage로 변환
     if (buffer.size() >= 640 * 480 * 3) {  // 해상도 640x480에 대해 RGB는 3바이트 픽셀
-         QByteArray frameData = buffer.left(640 * 480 * 3);
-          buffer.remove(0, 640 * 480 * 3);
+        QByteArray frameData = buffer.left(640 * 480 * 3);
+        buffer.remove(0, 640 * 480 * 3);
         // qDebug() << "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!";
 
         QImage image(reinterpret_cast<const uchar*>(frameData.data()), 640, 480, QImage::Format_RGB888);
 
-        // QLabel의 크기
         QSize labelSize = videoLabel->size();
-
-        // 이미지의 크기
         QSize imageSize = image.size();
         // 이미지와 QLabel의 종횡비 비교
         QRect targetRect;
@@ -54,17 +51,10 @@ void rtpClient::readFFmpegOutput() {
         QPixmap pixmap =  QPixmap::fromImage(croppedImage).scaled(labelSize, Qt::KeepAspectRatioByExpanding, Qt::SmoothTransformation);
         emit signal_video_start();
         videoLabel->setPixmap(pixmap);
-      //  qDebug() << "QPixmap created for stream_ui object at address: " << this;
-           // qDebug() << "Video data address: " << pixmap;
-
+        //  qDebug() << "QPixmap created for stream_ui object at address: " << this;
+        // qDebug() << "Video data address: " << pixmap;
     }
-
 }
-
-//void rtpClient::recv_url(QString url)
-//{
-//    streaming_url = url;
-//}
 
 void rtpClient::startFFmpegProcess(QString url) {
     ffmpegProcess = new QProcess();

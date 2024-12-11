@@ -27,7 +27,6 @@ private:
 public slots:
     void slot_quitBtn();
     void readFFmpegOutput();
-   // void recv_url(QString url);
 signals:
     void signal_ffmpeg_debug(QString,rtpClient*);
     void signal_streaming_start();
