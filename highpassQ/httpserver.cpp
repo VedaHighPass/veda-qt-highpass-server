@@ -53,7 +53,7 @@ void HttpServer::incomingConnection(qintptr socketDescriptor) {
 
         sslSocket->setLocalCertificate(certificate);
         sslSocket->setPrivateKey(privateKey);
-        sslSocket->setPeerVerifyMode(QSslSocket::VerifyNone); // �겢�씪�씠�뼵�듃 �씤利앹꽌 寃�利� �븞 �븿
+        //sslSocket->setPeerVerifyMode(QSslSocket::VerifyNone); // �겢�씪�씠�뼵�듃 �씤利앹꽌 寃�利� �븞 �븿
 
         connect(sslSocket, &QSslSocket::encrypted, this, &HttpServer::onEncrypted);
         connect(sslSocket, &QSslSocket::readyRead, this, &HttpServer::onReadyRead);
@@ -129,10 +129,8 @@ void HttpServer::onReadyRead() {
                 break;
             }
         }
-
         //qDebug() << requestData;
         //qDebug() << "contentLength:" << contentLength;
-
 
         if (contentLength > 0 && body.size() < contentLength) {
             // 본문이 아직 완전히 도착하지 않았으면 더 읽기를 대기
@@ -336,6 +334,9 @@ void HttpServer::onReadyRead() {
             // JSON �뜲�씠�꽣 異붿텧
             int gateNumber = jsonObject.value("GateNum").toInt();
             QString plateNumber = jsonObject.value("PlateNum").toString();
+            if (plateNumber == "UNKNOWN") {
+                return;
+            }
             QString time = jsonObject.value("time").toString();
             int imageWidth = jsonObject.value("imageWidth").toInt();
             int imageHeight = jsonObject.value("imageHeight").toInt();
@@ -412,20 +413,24 @@ void HttpServer::onReadyRead() {
 
             if (jsonDoc.isNull() || !jsonDoc.isObject()) {
                 sendResponse(sslSocket, "Invalid JSON format", 400);
-            return;
+
+                sslSocket->flush();
+                sslSocket->disconnectFromHost();
+                return;
             }
 
             QJsonObject jsonObject = jsonDoc.object();
             QString plateNumber = jsonObject.value("PlateNumber").toString();
             QString email = jsonObject.value("Email").toString();
 
-            // �쑀�슚�꽦 寃��궗
             if (plateNumber.isEmpty() || email.isEmpty()) {
                 sendResponse(sslSocket, "Missing PlateNumber or Email", 400);
+
+                sslSocket->flush();
+                sslSocket->disconnectFromHost();
                 return;
             }
 
-            // Emails �뀒�씠釉붿뿉 �뜲�씠�꽣 異붽�� �삉�뒗 �뾽�뜲�씠�듃
             bool success = DatabaseManager::instance().addOrUpdateEmail(plateNumber, email);
             if (success) {
                 sendResponse(sslSocket, "Email information updated successfully", 200);
@@ -437,6 +442,7 @@ void HttpServer::onReadyRead() {
             QJsonDocument jsonDoc = QJsonDocument::fromJson(body.toUtf8());
             if (jsonDoc.isNull() || !jsonDoc.isObject()) {
                 sendResponse(sslSocket, "Invalid JSON format", 400);
+
                 return;
             }
 
@@ -465,6 +471,7 @@ void HttpServer::onReadyRead() {
         } else {
             sendResponse(sslSocket, "Not Found", 404);
         }
+
         sslSocket->flush();
         sslSocket->disconnectFromHost();
     }
