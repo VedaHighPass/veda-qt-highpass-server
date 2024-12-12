@@ -137,12 +137,13 @@ void HttpServer::onReadyRead() {
             return;
         }
 
+
         // 요청이 완전한 경우 처리 시작
         QString request = QString::fromUtf8(requestData);
         QString method, path;
         QTextStream stream(&request);
         stream >> method >> path;
-        qDebug() << method << path;
+        //qDebug() << method << path;
 
         // 본문 데이터만 추출
         QJsonDocument jsonDoc;
@@ -153,7 +154,7 @@ void HttpServer::onReadyRead() {
             QJsonParseError parseError;
             jsonDoc = QJsonDocument::fromJson(body, &parseError);
             if (parseError.error != QJsonParseError::NoError) {
-                qDebug() << "JSON Parse Error:" << parseError.errorString();
+                //qDebug() << "JSON Parse Error:" << parseError.errorString();
                 sendResponse(sslSocket, "Invalid JSON format", 400);
                 requestData.clear();
                 return;
@@ -250,17 +251,14 @@ void HttpServer::onReadyRead() {
             QJsonDocument jsonDoc(jsonArray);
             sendResponse(sslSocket, jsonDoc.toJson(), 200);
         } else if (method == "GET" && path.startsWith("/images/")) {
-            // �슂泥��맂 寃쎈줈瑜� �떎�젣 �뙆�씪 �떆�뒪�뀥 寃쎈줈濡� 蹂��솚
             QString filePath = QString("/home/server/veda-qt-highpass-server/images") + path.mid(7); // "/images/" �씠�썑 寃쎈줈 異붽��
             QFile file(filePath);
 
-            // �뙆�씪 議댁옱 �뿬遺� �솗�씤
             if (!file.exists()) {
                 sendResponse(sslSocket, "Image not found", 404);
                 return;
             }
 
-            // �뙆�씪 �뿴湲�
             if (!file.open(QIODevice::ReadOnly)) {
                 sendResponse(sslSocket, "Failed to open image", 500);
                 return;
@@ -269,7 +267,6 @@ void HttpServer::onReadyRead() {
             QByteArray imageData = file.readAll();
             file.close();
 
-            // �씠誘몄�� �뜲�씠�꽣瑜� 諛섑솚
             QByteArray httpResponse = QString("HTTP/1.1 200 OK\r\n"
                                               "Content-Type: image/jpeg\r\n"
                                               "Content-Length: %1\r\n\r\n")
@@ -315,25 +312,26 @@ void HttpServer::onReadyRead() {
             } else {
                 sendResponse(sslSocket, "Failed to add record", 500);
             }
+            requestData.clear();
         } else if (method == "POST" && path == "/upload") {
             QString body = request.split("\r\n\r\n").last();
-            qDebug() << "body:" << body;
+            //qDebug() << "body:" << body;
 
             // JSON �뙆�떛 �삤瑜� 寃��궗
             QJsonParseError parseError;
             QJsonDocument jsonDoc = QJsonDocument::fromJson(body.toUtf8(), &parseError);
 
             if (parseError.error != QJsonParseError::NoError) {
-                qDebug() << "JSON Parse Error:" << parseError.errorString();
+                //qDebug() << "JSON Parse Error:" << parseError.errorString();
                 return;
             }
 
             QJsonObject jsonObject = jsonDoc.object();
-            qDebug() << "Parsed JSON Object:" << jsonObject;
+            //qDebug() << "Parsed JSON Object:" << jsonObject;
 
             // JSON �뜲�씠�꽣 異붿텧
             int gateNumber = jsonObject.value("GateNum").toInt();
-            QString plateNumber = jsonObject.value("PlateNum").toString();
+            QString plateNumber = jsonObject.value("PlateNum").toString().trimmed();
             if (plateNumber == "UNKNOWN") {
                 return;
             }
@@ -342,7 +340,7 @@ void HttpServer::onReadyRead() {
             int imageHeight = jsonObject.value("imageHeight").toInt();
             QString imageRawString = jsonObject.value("imageRaw").toString();
 
-            qDebug() << "imageWidth:" << imageWidth << "imageHeight:" << imageHeight << "plateNumber:" << plateNumber << "time:" << time;
+            //qDebug() << "imageWidth:" << imageWidth << "imageHeight:" << imageHeight << "plateNumber:" << plateNumber << "time:" << time;
             // Create directory [PlateNumber] if it doesn't exist
             QDir dir("../images/"+plateNumber);
             if (!dir.exists()) {
@@ -366,15 +364,15 @@ void HttpServer::onReadyRead() {
 
             QString formattedTime = currentTime.toString("yyyy-MM-dd HH:mm:ss");
             if (DatabaseManager::instance().processHighPassRecord(plateNumber, gateNumber, formattedTime)) {
-                qDebug() << "DB saved successfully.";
+                //qDebug() << "DB saved successfully.";
+                requestData.clear();
             }else {
-                qDebug() << "DB saved fail.";
+                //qDebug() << "DB saved fail.";
             }
         } else if (method == "POST" && path == "/camera") {
-            // �슂泥� 蹂몃Ц�뿉�꽌 JSON �뜲�씠�꽣 異붿텧
-            qDebug() << "Received �썝蹂�:" << request;
+            //qDebug() << "Received :" << request;
             QString body = request.mid(request.indexOf("\r\n\r\n") + 4).trimmed(); // JSON 蹂몃Ц 異붿텧
-            qDebug() << "Received body:" << body;
+            //qDebug() << "Received body:" << body;
 
             // JSON �뙆�떛
             QJsonDocument jsonDoc = QJsonDocument::fromJson(body.toUtf8());
@@ -391,11 +389,12 @@ void HttpServer::onReadyRead() {
                 sendResponse(sslSocket, "Missing Camera_Name or Camera_RTSP_URL", 400);
                 return;
             }
-            qDebug() << "Camera Name:" << cameraName;
-            qDebug() << "RTSP URL:" << rtspUrl;
+            //qDebug() << "Camera Name:" << cameraName;
+            //qDebug() << "RTSP URL:" << rtspUrl;
 
-            // �뜲�씠�꽣踰좎씠�뒪�뿉 移대찓�씪 異붽��
             int newCameraID = DatabaseManager::instance().addCamera(cameraName, rtspUrl);
+            requestData.clear();
+
             if (newCameraID != -1) {
                 // �꽦怨� �쓳�떟 �깮�꽦
                 QJsonObject responseObj;
@@ -413,9 +412,8 @@ void HttpServer::onReadyRead() {
 
             if (jsonDoc.isNull() || !jsonDoc.isObject()) {
                 sendResponse(sslSocket, "Invalid JSON format", 400);
-
-                sslSocket->flush();
-                sslSocket->disconnectFromHost();
+                //qDebug() << "Invalid JSON format1";
+                requestData.clear();
                 return;
             }
 
@@ -425,24 +423,26 @@ void HttpServer::onReadyRead() {
 
             if (plateNumber.isEmpty() || email.isEmpty()) {
                 sendResponse(sslSocket, "Missing PlateNumber or Email", 400);
-
-                sslSocket->flush();
-                sslSocket->disconnectFromHost();
+                //qDebug() << "Missing PlateNumber or Email";
+                requestData.clear();
                 return;
             }
 
             bool success = DatabaseManager::instance().addOrUpdateEmail(plateNumber, email);
             if (success) {
                 sendResponse(sslSocket, "Email information updated successfully", 200);
+                //qDebug() << "Email information updated successfully";
             } else {
                 sendResponse(sslSocket, "Failed to update email information", 500);
+                //qDebug() << "Failed to update email information";
             }
+            requestData.clear();
         } else if (method == "POST" && path == "/highPassRecord") {
             QString body = request.mid(request.indexOf("\r\n\r\n") + 4).trimmed();
             QJsonDocument jsonDoc = QJsonDocument::fromJson(body.toUtf8());
             if (jsonDoc.isNull() || !jsonDoc.isObject()) {
                 sendResponse(sslSocket, "Invalid JSON format", 400);
-
+                requestData.clear();
                 return;
             }
 
@@ -453,6 +453,7 @@ void HttpServer::onReadyRead() {
 
             if (plateNumber.isEmpty() || gateNumber <= 0 || timeStr.isEmpty()) {
                 sendResponse(sslSocket, "Missing PlateNumber, GateNumber, or Time", 400);
+                requestData.clear();
                 return;
             }
 
@@ -460,6 +461,7 @@ void HttpServer::onReadyRead() {
             QDateTime currentTime = QDateTime::fromString(timeStr, "yyyy-MM-dd HH:mm:ss");
             if (!currentTime.isValid()) {
                 sendResponse(sslSocket, "Invalid time format. Use yyyy-MM-dd HH:mm:ss", 400);
+                requestData.clear();
                 return;
             }
 
@@ -468,12 +470,13 @@ void HttpServer::onReadyRead() {
             } else {
                 sendResponse(sslSocket, "Failed to update Path", 500);
             }
+            requestData.clear();
         } else {
             sendResponse(sslSocket, "Not Found", 404);
         }
 
-        sslSocket->flush();
-        sslSocket->disconnectFromHost();
+        //sslSocket->flush();
+        //sslSocket->disconnectFromHost();
     }
 }
 
