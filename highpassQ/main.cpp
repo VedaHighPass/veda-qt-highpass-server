@@ -37,15 +37,15 @@ SSL_CTX* create_context()
 
 void configure_context(SSL_CTX* ctx, const char* cert_file, const char* key_file)
 {
-    // 인증서 로드
+    // ?��증서 로드
     if(SSL_CTX_use_certificate_file(ctx, cert_file, SSL_FILETYPE_PEM) <= 0){
-        qDebug() << "인증서 로드 오류";
+        qDebug() << "?��증서 로드 ?���?";
         ERR_print_errors_fp(stderr);
         exit(EXIT_FAILURE);
     }
-    // 개인 키 로드
+    // 개인 ?�� 로드
     if(SSL_CTX_use_PrivateKey_file(ctx, key_file, SSL_FILETYPE_PEM) <= 0){
-        qDebug() << "개인 키 로드 오류";
+        qDebug() << "개인 ?�� 로드 ?���?";
         ERR_print_errors_fp(stderr);
         exit(EXIT_FAILURE);
     }
@@ -90,7 +90,7 @@ int main(int argc, char *argv[])
 //        }
 //        qDebug() << "test004";
 
-//        SSL_shutdown(ssl);  // 명시적인 연결 종료
+//        SSL_shutdown(ssl);  // 명시?��?�� ?���? 종료
 //        SSL_free(ssl);
 //        close(client_fd);
 //    }
